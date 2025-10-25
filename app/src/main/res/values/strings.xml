@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">shoutless</string>
+    <string-array name="taglines">
+        <item>inside voice, outside world</item>
+        <item>louder than yelling</item>
+        <item>big text energy</item>
+        <item>no more \"yeah totally\" *nods*</item>
+        <item>silence speaks louder</item>
+        <item>now they see what you mean</item>
+        <item>talking, but with light</item>
+        <item>make them read the room</item>
+        <item>hearing with eyes</item>
+    </string-array>
+    <string-array name="toast_messages">
+        <item>eyes can\'t hear silence</item>
+        <item>no text, no voice</item>
+    </string-array>
+</resources>

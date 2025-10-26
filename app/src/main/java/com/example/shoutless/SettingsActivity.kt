@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
@@ -23,7 +24,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -36,7 +36,7 @@ class SettingsActivity : ComponentActivity() {
             ShoutlessTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = Color(0xFF121212)
+                    color = MaterialTheme.colorScheme.background
                 ) {
                     SettingsScreen()
                 }
@@ -62,13 +62,13 @@ fun SettingsScreen() {
         verticalArrangement = Arrangement.Center
     ) {
         // Default Font Size Slider
-        Text("lowkey default volume: ${defaultFontSize.toInt()}", color = Color.White, fontSize = 20.sp)
+        Text("lowkey default volume: ${defaultFontSize.toInt()}", color = MaterialTheme.colorScheme.onBackground, fontSize = 20.sp)
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp), verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("10", color = Color.White)
+            Text("10", color = MaterialTheme.colorScheme.onBackground)
             Slider(
                 value = defaultFontSize,
                 onValueChange = {
@@ -83,19 +83,19 @@ fun SettingsScreen() {
                 steps = 7, // (50-10) / 5 = 8 sections, so 7 steps
                 modifier = Modifier.weight(1f)
             )
-            Text("50", color = Color.White)
+            Text("50", color = MaterialTheme.colorScheme.onBackground)
         }
 
         Spacer(modifier = Modifier.height(32.dp))
 
         // Max Font Size Slider
-        Text("lowkey max volume: ${maxFontSize.toInt()}", color = Color.White, fontSize = 20.sp)
+        Text("lowkey max volume: ${maxFontSize.toInt()}", color = MaterialTheme.colorScheme.onBackground, fontSize = 20.sp)
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp), verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(defaultFontSize.toInt().toString(), color = Color.White)
+            Text(defaultFontSize.toInt().toString(), color = MaterialTheme.colorScheme.onBackground)
             Slider(
                 value = maxFontSize,
                 onValueChange = {
@@ -105,7 +105,7 @@ fun SettingsScreen() {
                 valueRange = defaultFontSize..150f,
                 modifier = Modifier.weight(1f)
             )
-            Text("150", color = Color.White)
+            Text("150", color = MaterialTheme.colorScheme.onBackground)
         }
 
         Spacer(modifier = Modifier.height(32.dp))
@@ -118,7 +118,7 @@ fun SettingsScreen() {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text("Force Max Brightness (Blast)", color = Color.White, fontSize = 20.sp)
+            Text("Force Max Brightness (Blast)", color = MaterialTheme.colorScheme.onBackground, fontSize = 20.sp)
             Switch(
                 checked = forceBrightness,
                 onCheckedChange = {
@@ -138,7 +138,7 @@ fun SettingsScreen() {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text("Force Landscape (Blast)", color = Color.White, fontSize = 20.sp)
+            Text("Force Landscape (Blast)", color = MaterialTheme.colorScheme.onBackground, fontSize = 20.sp)
             Switch(
                 checked = forceLandscape,
                 onCheckedChange = {

@@ -27,6 +27,7 @@ import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -73,7 +74,7 @@ class MainActivity : ComponentActivity() {
                 HideSystemBars()
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = Color(0xFF121212)
+                    color = MaterialTheme.colorScheme.background
                 ) {
                     HomeScreen()
                 }
@@ -134,9 +135,9 @@ fun HomeScreen(modifier: Modifier = Modifier) {
                                 style = SpanStyle(
                                     fontFamily = Poppins,
                                     fontWeight = FontWeight.Medium,
-                                    color = Color(0xFFf10b7c),
+                                    color = MaterialTheme.colorScheme.secondary,
                                     fontSize = 48.sp,
-                                    shadow = Shadow(color = Color(0xFFf10b7c), blurRadius = 20f)
+                                    shadow = Shadow(color = MaterialTheme.colorScheme.secondary, blurRadius = 20f)
                                 )
                             ) {
                                 append("shout")
@@ -145,9 +146,9 @@ fun HomeScreen(modifier: Modifier = Modifier) {
                                 style = SpanStyle(
                                     fontFamily = Poppins,
                                     fontWeight = FontWeight.Light,
-                                    color = Color(0xFF7804f1),
+                                    color = MaterialTheme.colorScheme.primary,
                                     fontSize = 48.sp,
-                                    shadow = Shadow(color = Color(0xFF7804f1), blurRadius = 20f)
+                                    shadow = Shadow(color = MaterialTheme.colorScheme.primary, blurRadius = 20f)
                                 )
                             ) {
                                 append("less")
@@ -164,10 +165,10 @@ fun HomeScreen(modifier: Modifier = Modifier) {
                         style = TextStyle(
                             fontFamily = Poppins,
                             fontWeight = FontWeight.Light,
-                            color = Color.White,
+                            color = MaterialTheme.colorScheme.onBackground,
                             fontSize = 16.sp,
                             fontStyle = FontStyle.Italic,
-                            shadow = Shadow(color = Color.White, blurRadius = 10f)
+                            shadow = Shadow(color = MaterialTheme.colorScheme.onBackground, blurRadius = 10f)
                         )
                     )
                 }
@@ -183,7 +184,7 @@ fun HomeScreen(modifier: Modifier = Modifier) {
                     ModeButton(
                         iconId = R.drawable.icon_lowkey,
                         contentDescription = "Lowkey Mode",
-                        glowColor = Color(0xFF7702ef),
+                        glowColor = MaterialTheme.colorScheme.primary,
                         onClick = {
                             if (text.isBlank()) {
                                 val messages = context.resources.getStringArray(R.array.toast_messages)
@@ -198,7 +199,7 @@ fun HomeScreen(modifier: Modifier = Modifier) {
                     ModeButton(
                         iconId = R.drawable.icon_blast,
                         contentDescription = "Blast Mode",
-                        glowColor = Color(0xFFf10b7c),
+                        glowColor = MaterialTheme.colorScheme.secondary,
                         onClick = {
                             if (text.isBlank()) {
                                 val messages = context.resources.getStringArray(R.array.toast_messages)
@@ -227,18 +228,18 @@ fun HomeScreen(modifier: Modifier = Modifier) {
                         .shadow(
                             elevation = 24.dp,
                             shape = RoundedCornerShape(24.dp),
-                            ambientColor = Color(0xFFf10b7c)
+                            ambientColor = MaterialTheme.colorScheme.secondary
                         ),
                     shape = RoundedCornerShape(24.dp),
-                    textStyle = TextStyle(color = Color.White, fontSize = 18.sp),
+                    textStyle = TextStyle(color = MaterialTheme.colorScheme.onSurface, fontSize = 18.sp),
                     colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Color(0xFF1b1b1b),
-                        unfocusedContainerColor = Color(0xFF1b1b1b),
+                        focusedContainerColor = MaterialTheme.colorScheme.surface,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
                         disabledContainerColor = Color.DarkGray,
-                        focusedIndicatorColor = Color(0xFFf10b7c),
-                        unfocusedIndicatorColor = Color(0xFFf10b7c),
+                        focusedIndicatorColor = MaterialTheme.colorScheme.secondary,
+                        unfocusedIndicatorColor = MaterialTheme.colorScheme.secondary,
                     ),
-                    label = { Text("Enter text", color = Color.Gray) }
+                    placeholder = { Text("Enter text", color = Color.Gray) }
                 )
                 if (text.isNotEmpty()) {
                     IconButton(
@@ -247,7 +248,7 @@ fun HomeScreen(modifier: Modifier = Modifier) {
                             .align(Alignment.TopEnd)
                             .padding(8.dp)
                     ) {
-                        Icon(Icons.Default.Clear, contentDescription = "Clear text", tint = Color.White)
+                        Icon(Icons.Default.Clear, contentDescription = "Clear text", tint = MaterialTheme.colorScheme.onSurface)
                     }
                 }
             }
@@ -265,7 +266,7 @@ fun HomeScreen(modifier: Modifier = Modifier) {
             Icon(
                 imageVector = Icons.Default.Settings,
                 contentDescription = "Settings",
-                tint = Color.DarkGray
+                tint = MaterialTheme.colorScheme.onBackground
             )
         }
 
@@ -288,20 +289,20 @@ fun ComposableToast(message: String, visible: Boolean, modifier: Modifier = Modi
                 .shadow(
                     elevation = 12.dp,
                     shape = RoundedCornerShape(24.dp),
-                    ambientColor = Color(0xFF7804f1)
+                    ambientColor = MaterialTheme.colorScheme.primary
                 )
                 .border(
                     width = 2.dp,
-                    color = Color(0xFF7804f1),
+                    color = MaterialTheme.colorScheme.primary,
                     shape = RoundedCornerShape(24.dp)
                 ),
             shape = RoundedCornerShape(24.dp),
-            color = Color(0xFF1b1b1b)
+            color = MaterialTheme.colorScheme.surface
         ) {
             Text(
                 text = message,
                 modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp),
-                color = Color.White,
+                color = MaterialTheme.colorScheme.onSurface,
                 style = TextStyle(fontSize = 16.sp)
             )
         }

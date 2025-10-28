@@ -15,6 +15,7 @@ val sl_pink = Color(0xFFEF04F1)
 val sl_blue = Color(0xFF3D5AFE)
 val sl_greySurface = Color(0xFF1b1b1b)
 val sl_greyBg = Color(0xFF121212)
+val black = Color(0xFF000000)
 
 // "On" Colors
 val on_primary = Color.White
@@ -31,3 +32,7 @@ val sl_background_light = Color(0xFFFDF7FF)
 val sl_surface_light = Color(0xFFFDF7FF)
 val on_background_light = Color(0xFF1B1B1F)
 val on_surface_light = Color(0xFF1B1B1F)
+
+// Surface Variants
+val on_surface_variant_dark = Color(0xFF2D2D2D)
+val on_surface_variant_light = Color(0xFF2D2D2D)

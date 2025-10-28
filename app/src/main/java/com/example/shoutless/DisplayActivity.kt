@@ -22,6 +22,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,8 +38,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.shoutless.ui.theme.ShoutlessTheme
+import com.example.shoutless.ui.theme.ShoutlessDisplayTheme
+import com.example.shoutless.util.HideSystemBars
 import kotlin.math.min
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class DisplayActivity : ComponentActivity() {
 
@@ -48,6 +53,7 @@ class DisplayActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val sharedPreferences = getSharedPreferences("shoutless_prefs", MODE_PRIVATE)
+        sharedPreferences.edit().putString("last_display_mode", mode).apply()
         val defaultFontSize = sharedPreferences.getInt("lowkey_default_font_size", 30)
         val maxFontSize = sharedPreferences.getInt("lowkey_max_font_size", 150)
         val forceBrightness = sharedPreferences.getBoolean("blast_force_brightness", false)
@@ -64,10 +70,23 @@ class DisplayActivity : ComponentActivity() {
         }
 
         setContent {
-            ShoutlessTheme {
-                DisplayScreen(text = text, mode = mode, defaultFontSize = defaultFontSize, maxFontSize = maxFontSize) {
-                    finish()
-                }
+            ShoutlessDisplayTheme {
+                DisplayScreen(
+                    text = text,
+                    mode = mode,
+                    defaultFontSize = defaultFontSize,
+                    maxFontSize = maxFontSize,
+                    onDoubleTap = {
+                        val intent = Intent(this, MainActivity::class.java)
+                        startActivity(intent)
+                        finish()
+                    },
+                    onTripleTap = {
+                        val intent = Intent(this, ClapbackActivity::class.java)
+                        startActivity(intent)
+                        finish()
+                    }
+                )
             }
         }
     }
@@ -86,7 +105,15 @@ class DisplayActivity : ComponentActivity() {
 }
 
 @Composable
-fun DisplayScreen(text: String, mode: String, defaultFontSize: Int, maxFontSize: Int, onDoubleTap: () -> Unit) {
+fun DisplayScreen(
+    text: String,
+    mode: String,
+    defaultFontSize: Int,
+    maxFontSize: Int,
+    onDoubleTap: () -> Unit,
+    onTripleTap: () -> Unit
+) {
+    HideSystemBars()
     val configuration = LocalConfiguration.current
     val density = LocalDensity.current
     val padding = 16.dp
@@ -148,13 +175,32 @@ fun DisplayScreen(text: String, mode: String, defaultFontSize: Int, maxFontSize:
         Modifier
     }
 
+    val scope = rememberCoroutineScope()
+    var tapCount by remember { mutableStateOf(0) }
+    var tapJob: Job? by remember { mutableStateOf(null) }
+
     Scaffold {
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(it)
                 .background(MaterialTheme.colorScheme.background)
-                .pointerInput(Unit) { detectTapGestures(onDoubleTap = { onDoubleTap() }) }
+                .pointerInput(Unit) {
+                    detectTapGestures(
+                        onTap = {
+                            tapJob?.cancel()
+                            tapCount++
+                            tapJob = scope.launch {
+                                delay(300L)
+                                when (tapCount) {
+                                    2 -> onDoubleTap()
+                                    3 -> onTripleTap()
+                                }
+                                tapCount = 0
+                            }
+                        }
+                    )
+                }
                 .then(gestureModifier)
                 .padding(padding),
             contentAlignment = Alignment.Center

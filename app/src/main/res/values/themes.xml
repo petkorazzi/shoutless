@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.Shoutless" parent="android:Theme.Material.NoActionBar" />
+    <style name="Theme.Shoutless" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowFullscreen">true</item>
+    </style>
 
     <style name="Theme.App.Starting" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">@color/sl_greyBg</item>

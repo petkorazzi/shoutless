@@ -1,5 +1,7 @@
 package com.example.shoutless
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -62,6 +64,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.shoutless.ui.theme.ShoutlessTheme
+import com.example.shoutless.util.HideSystemBars
 import com.example.shoutless.util.glow
 
 class ClapbackActivity : ComponentActivity() {
@@ -82,12 +85,32 @@ class ClapbackActivity : ComponentActivity() {
 
 @Composable
 fun ClapbackScreen(modifier: Modifier = Modifier) {
-    var selectedMode by remember { mutableStateOf("lowkey") }
+    val context = LocalContext.current
+    val sharedPreferences = remember { context.getSharedPreferences("shoutless_prefs", Context.MODE_PRIVATE) }
+
+    var selectedMode by remember { mutableStateOf(sharedPreferences.getString("last_display_mode", "Lowkey") ?: "Lowkey") }
+
+    val clapback1Label by remember { mutableStateOf(sharedPreferences.getString("clapback1_label", "yeah") ?: "yeah") }
+    val clapback1Hidden by remember { mutableStateOf(sharedPreferences.getString("clapback1_hidden", "yeah") ?: "yeah") }
+    val clapback2Label by remember { mutableStateOf(sharedPreferences.getString("clapback2_label", "nah") ?: "nah") }
+    val clapback2Hidden by remember { mutableStateOf(sharedPreferences.getString("clapback2_hidden", "nah") ?: "nah") }
+    val clapback3Label by remember { mutableStateOf(sharedPreferences.getString("clapback3_label", "ty") ?: "ty") }
+    val clapback3Hidden by remember { mutableStateOf(sharedPreferences.getString("clapback3_hidden", "thank you") ?: "thank you") }
+    val clapback4Label by remember { mutableStateOf(sharedPreferences.getString("clapback4_label", "brb") ?: "brb") }
+    val clapback4Hidden by remember { mutableStateOf(sharedPreferences.getString("clapback4_hidden", "be right back") ?: "be right back") }
+
     var customText1 by remember { mutableStateOf("On my way!") }
     var customText2 by remember { mutableStateOf("Sounds good!") }
     var showEditDialog by remember { mutableStateOf(false) }
     var textToEditId by remember { mutableStateOf(0) }
     var number by remember { mutableStateOf(1) }
+
+    fun launchDisplay(text: String) {
+        val intent = DisplayActivity.newIntent(context, text, selectedMode)
+        context.startActivity(intent)
+    }
+
+    HideSystemBars()
 
     Scaffold(modifier = modifier.fillMaxSize()) { paddingValues ->
         Column(
@@ -122,7 +145,6 @@ fun ClapbackScreen(modifier: Modifier = Modifier) {
             )
 
             // Tagline
-            val context = LocalContext.current
             val taglines = context.resources.getStringArray(R.array.clapback_taglines)
             val tagline = remember { taglines.random() }
 
@@ -136,18 +158,16 @@ fun ClapbackScreen(modifier: Modifier = Modifier) {
             )
 
             // Segmented Toggle
-            SingleChoiceSegmentedButtonRow(
-                modifier = Modifier.fillMaxWidth(0.8f)
-            ) {
+            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth(0.8f)) {
                 SegmentedButton(
-                    modifier = if (selectedMode == "lowkey") Modifier.glow(
+                    modifier = if (selectedMode == "Lowkey") Modifier.glow(
                         color = MaterialTheme.colorScheme.primary,
                         radius = 15.dp,
                         shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2),
                         alpha = 0.5f
                     ) else Modifier,
-                    selected = selectedMode == "lowkey",
-                    onClick = { selectedMode = "lowkey" },
+                    selected = selectedMode == "Lowkey",
+                    onClick = { selectedMode = "Lowkey" },
                     shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2),
                     colors = SegmentedButtonDefaults.colors(
                         activeContainerColor = MaterialTheme.colorScheme.primary,
@@ -158,17 +178,17 @@ fun ClapbackScreen(modifier: Modifier = Modifier) {
                         inactiveBorderColor = MaterialTheme.colorScheme.primary
                     )
                 ) {
-                    Text("lowkey")
+                    Text("lowkey", style = MaterialTheme.typography.labelLarge)
                 }
                 SegmentedButton(
-                    modifier = if (selectedMode == "BLAST") Modifier.glow(
+                    modifier = if (selectedMode == "Blast") Modifier.glow(
                         color = MaterialTheme.colorScheme.secondary,
                         radius = 15.dp,
                         shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2),
                         alpha = 0.5f
                     ) else Modifier,
-                    selected = selectedMode == "BLAST",
-                    onClick = { selectedMode = "BLAST" },
+                    selected = selectedMode == "Blast",
+                    onClick = { selectedMode = "Blast" },
                     shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2),
                     colors = SegmentedButtonDefaults.colors(
                         activeContainerColor = MaterialTheme.colorScheme.secondary,
@@ -179,23 +199,23 @@ fun ClapbackScreen(modifier: Modifier = Modifier) {
                         inactiveBorderColor = MaterialTheme.colorScheme.secondary
                     )
                 ) {
-                    Text("BLAST")
+                    Text("BLAST", style = MaterialTheme.typography.labelLarge)
                 }
             }
 
 
             // Buttons
-            val buttonTextColor = if (selectedMode == "lowkey") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
-            val buttonBorderColor = if (selectedMode == "lowkey") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
+            val buttonTextColor = if (selectedMode == "Lowkey") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
+            val buttonBorderColor = if (selectedMode == "Lowkey") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
 
             Column(modifier = Modifier.padding(top = 32.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                 Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    ClapbackButton(text = "yeah", textColor = buttonTextColor, borderColor = buttonBorderColor)
-                    ClapbackButton(text = "nah", textColor = buttonTextColor, borderColor = buttonBorderColor)
+                    ClapbackButton(text = clapback1Label, textColor = buttonTextColor, borderColor = buttonBorderColor, onClick = { launchDisplay(clapback1Hidden) })
+                    ClapbackButton(text = clapback2Label, textColor = buttonTextColor, borderColor = buttonBorderColor, onClick = { launchDisplay(clapback2Hidden) })
                 }
                 Row(modifier = Modifier.padding(top = 16.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    ClapbackButton(text = "ty", textColor = buttonTextColor, borderColor = buttonBorderColor)
-                    ClapbackButton(text = "brb", textColor = buttonTextColor, borderColor = buttonBorderColor)
+                    ClapbackButton(text = clapback3Label, textColor = buttonTextColor, borderColor = buttonBorderColor, onClick = { launchDisplay(clapback3Hidden) })
+                    ClapbackButton(text = clapback4Label, textColor = buttonTextColor, borderColor = buttonBorderColor, onClick = { launchDisplay(clapback4Hidden) })
                 }
             }
 
@@ -208,6 +228,7 @@ fun ClapbackScreen(modifier: Modifier = Modifier) {
                 CustomTextButton(
                     text = customText1,
                     borderColor = buttonBorderColor,
+                    onClick = { launchDisplay(customText1) },
                     onEditClick = {
                         textToEditId = 1
                         showEditDialog = true
@@ -216,6 +237,7 @@ fun ClapbackScreen(modifier: Modifier = Modifier) {
                 CustomTextButton(
                     text = customText2,
                     borderColor = buttonBorderColor,
+                    onClick = { launchDisplay(customText2) },
                     onEditClick = {
                         textToEditId = 2
                         showEditDialog = true
@@ -227,6 +249,7 @@ fun ClapbackScreen(modifier: Modifier = Modifier) {
                 value = number,
                 onValueChange = { if (it >= 1) number = it },
                 borderColor = buttonBorderColor,
+                onNumberClick = { launchDisplay(number.toString()) },
                 modifier = Modifier.padding(top = 32.dp)
             )
         }
@@ -257,7 +280,8 @@ fun ClapbackScreen(modifier: Modifier = Modifier) {
 fun ClapbackButton(
     text: String,
     textColor: Color,
-    borderColor: Color
+    borderColor: Color,
+    onClick: () -> Unit
 ) {
     Box(
         modifier = Modifier
@@ -270,14 +294,15 @@ fun ClapbackButton(
             )
             .clip(RoundedCornerShape(24.dp))
             .background(MaterialTheme.colorScheme.surface)
-            .border(BorderStroke(2.dp, borderColor), RoundedCornerShape(24.dp)),
+            .border(BorderStroke(2.dp, borderColor), RoundedCornerShape(24.dp))
+            .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
         Text(
             text = text,
             color = textColor,
             textAlign = TextAlign.Center,
-            style = MaterialTheme.typography.bodyLarge.copy(
+            style = MaterialTheme.typography.headlineSmall.copy(
                 shadow = Shadow(color = textColor, blurRadius = 15f)
             )
         )
@@ -288,6 +313,7 @@ fun ClapbackButton(
 fun CustomTextButton(
     text: String,
     borderColor: Color,
+    onClick: () -> Unit,
     onEditClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -303,6 +329,7 @@ fun CustomTextButton(
             .clip(RoundedCornerShape(16.dp))
             .border(BorderStroke(2.dp, borderColor), RoundedCornerShape(16.dp))
             .background(MaterialTheme.colorScheme.surface)
+            .clickable(onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -359,6 +386,7 @@ fun NumberPicker(
     value: Int,
     onValueChange: (Int) -> Unit,
     borderColor: Color,
+    onNumberClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -448,7 +476,8 @@ fun NumberPicker(
                 )
                 .clip(RoundedCornerShape(cornerRadius))
                 .background(MaterialTheme.colorScheme.surface)
-                .border(BorderStroke(3.dp, borderColor), RoundedCornerShape(cornerRadius)),
+                .border(BorderStroke(3.dp, borderColor), RoundedCornerShape(cornerRadius))
+                .clickable(onClick = onNumberClick),
             contentAlignment = Alignment.Center
         ) {
             AnimatedContent(

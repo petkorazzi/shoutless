@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Bolt
 import androidx.compose.material.icons.rounded.Clear
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -57,6 +58,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.shoutless.ui.theme.ShoutlessTheme
+import com.example.shoutless.util.HideSystemBars
 import com.example.shoutless.util.glow
 import kotlinx.coroutines.launch
 
@@ -86,6 +88,8 @@ fun HomeScreen(modifier: Modifier = Modifier) {
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
+    HideSystemBars()
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -98,7 +102,7 @@ fun HomeScreen(modifier: Modifier = Modifier) {
                         Icon(
                             imageVector = Icons.Rounded.Settings,
                             contentDescription = "Settings",
-                            tint = MaterialTheme.colorScheme.onBackground
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 },
@@ -124,7 +128,6 @@ fun HomeScreen(modifier: Modifier = Modifier) {
         ) {
             // Top section with header, tagline, and icons
             Column(
-                modifier = Modifier.weight(0.55f),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
@@ -214,11 +217,59 @@ fun HomeScreen(modifier: Modifier = Modifier) {
                 }
             }
 
+            // Clapback Button
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 40.dp),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(85.dp)
+                        .glow(
+                            color = MaterialTheme.colorScheme.tertiary,
+                            radius = 15.dp,
+                            shape = RoundedCornerShape(24.dp),
+                            alpha = 0.5f
+                        )
+                        .background(
+                            color = MaterialTheme.colorScheme.surface,
+                            shape = RoundedCornerShape(24.dp)
+                        )
+                        .border(
+                            width = 2.dp,
+                            color = MaterialTheme.colorScheme.tertiary,
+                            shape = RoundedCornerShape(24.dp)
+                        )
+                        .clickable {
+                            val intent = Intent(context, ClapbackActivity::class.java)
+                            context.startActivity(intent)
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Icon(
+                            imageVector = Icons.Rounded.Bolt,
+                            contentDescription = "Clapback Mode",
+                            modifier = Modifier.size(57.dp),
+                            tint = MaterialTheme.colorScheme.tertiary
+                        )
+                        Text(
+                            text = "clapback",
+                            color = MaterialTheme.colorScheme.tertiary,
+                            style = MaterialTheme.typography.titleSmall,
+                            modifier = Modifier.offset(y = (-7).dp)
+                        )
+                    }
+                }
+            }
+
             // Bottom section with text field
             Box(
                 modifier = Modifier
-                    .weight(0.45f)
-                    .padding(start = 24.dp, end = 24.dp, bottom = 24.dp, top = 12.dp)
+                    .fillMaxSize()
+                    .padding(start = 24.dp, end = 24.dp, bottom = 24.dp, top = 0.dp)
             ) {
                 OutlinedTextField(
                     value = text,

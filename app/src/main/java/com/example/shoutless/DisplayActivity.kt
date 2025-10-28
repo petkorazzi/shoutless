@@ -1,6 +1,5 @@
 package com.example.shoutless
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
@@ -8,7 +7,6 @@ import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectTransformGestures
@@ -16,9 +14,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -26,13 +25,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.rememberTextMeasurer
@@ -40,9 +37,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.WindowInsetsControllerCompat
 import com.example.shoutless.ui.theme.ShoutlessTheme
 import kotlin.math.min
 
@@ -53,7 +47,6 @@ class DisplayActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         val sharedPreferences = getSharedPreferences("shoutless_prefs", MODE_PRIVATE)
         val defaultFontSize = sharedPreferences.getInt("lowkey_default_font_size", 30)
         val maxFontSize = sharedPreferences.getInt("lowkey_max_font_size", 150)
@@ -72,7 +65,6 @@ class DisplayActivity : ComponentActivity() {
 
         setContent {
             ShoutlessTheme {
-                HideSystemBars()
                 DisplayScreen(text = text, mode = mode, defaultFontSize = defaultFontSize, maxFontSize = maxFontSize) {
                     finish()
                 }
@@ -94,22 +86,6 @@ class DisplayActivity : ComponentActivity() {
 }
 
 @Composable
-private fun HideSystemBars() {
-    val view = LocalView.current
-    if (!view.isInEditMode) {
-        DisposableEffect(Unit) {
-            val window = (view.context as Activity).window
-            val insetsController = WindowCompat.getInsetsController(window, view)
-            insetsController.hide(WindowInsetsCompat.Type.systemBars())
-            insetsController.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-            onDispose {
-                insetsController.show(WindowInsetsCompat.Type.systemBars())
-            }
-        }
-    }
-}
-
-@Composable
 fun DisplayScreen(text: String, mode: String, defaultFontSize: Int, maxFontSize: Int, onDoubleTap: () -> Unit) {
     val configuration = LocalConfiguration.current
     val density = LocalDensity.current
@@ -119,15 +95,14 @@ fun DisplayScreen(text: String, mode: String, defaultFontSize: Int, maxFontSize:
     val screenHeightPx = with(density) { (configuration.screenHeightDp.dp - (padding * 2)).toPx() }
 
     val textMeasurer = rememberTextMeasurer()
-    val textStyleFromTheme = LocalTextStyle.current
 
-    val maxFitFontSize = remember(text, screenWidthPx, screenHeightPx, textStyleFromTheme) {
+    val maxFitFontSize = remember(text, screenWidthPx, screenHeightPx) {
         if (text.isBlank()) {
             maxFontSize.sp
         } else {
             var size = with(density) { screenHeightPx.toSp() }
             while (size.value > 1f) {
-                val style = textStyleFromTheme.copy(fontSize = size, textAlign = TextAlign.Center, lineHeight = size * 1.2f)
+                val style = TextStyle(fontSize = size, textAlign = TextAlign.Center, lineHeight = size * 1.2f)
                 if (!isTextOverflowing(text, style, screenWidthPx, screenHeightPx, textMeasurer)) {
                     break
                 }
@@ -137,7 +112,7 @@ fun DisplayScreen(text: String, mode: String, defaultFontSize: Int, maxFontSize:
         }
     }
 
-    val initialFontSize = remember(text, screenWidthPx, screenHeightPx, mode, textStyleFromTheme, defaultFontSize) {
+    val initialFontSize = remember(text, screenWidthPx, screenHeightPx, mode, defaultFontSize) {
         if (text.isBlank()) {
             30.sp
         } else if (mode == "Blast") {
@@ -145,7 +120,7 @@ fun DisplayScreen(text: String, mode: String, defaultFontSize: Int, maxFontSize:
         } else { // Lowkey mode
             var size = defaultFontSize.sp
             while (size.value > 1f) {
-                val style = textStyleFromTheme.copy(fontSize = size, textAlign = TextAlign.Center, lineHeight = size * 1.2f)
+                val style = TextStyle(fontSize = size, textAlign = TextAlign.Center, lineHeight = size * 1.2f)
                 if (!isTextOverflowing(text, style, screenWidthPx, screenHeightPx, textMeasurer)) {
                     break
                 }
@@ -173,29 +148,30 @@ fun DisplayScreen(text: String, mode: String, defaultFontSize: Int, maxFontSize:
         Modifier
     }
 
-    val finalTextStyle = textStyleFromTheme.copy(
-        fontSize = dynamicFontSize,
-        textAlign = TextAlign.Center,
-        lineHeight = dynamicFontSize * 1.2f
-    )
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Black)
-            .pointerInput(Unit) { detectTapGestures(onDoubleTap = { onDoubleTap() }) }
-            .then(gestureModifier)
-            .padding(padding),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = text,
-            color = Color.White,
-            style = finalTextStyle,
-            modifier = Modifier.graphicsLayer {
-                compositingStrategy = CompositingStrategy.Offscreen
-            }
-        )
+    Scaffold {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(it)
+                .background(MaterialTheme.colorScheme.background)
+                .pointerInput(Unit) { detectTapGestures(onDoubleTap = { onDoubleTap() }) }
+                .then(gestureModifier)
+                .padding(padding),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = text,
+                color = MaterialTheme.colorScheme.onBackground,
+                style = LocalTextStyle.current.copy(
+                    fontSize = dynamicFontSize,
+                    textAlign = TextAlign.Center,
+                    lineHeight = dynamicFontSize * 1.2f
+                ),
+                modifier = Modifier.graphicsLayer {
+                    compositingStrategy = CompositingStrategy.Offscreen
+                }
+            )
+        }
     }
 }
 

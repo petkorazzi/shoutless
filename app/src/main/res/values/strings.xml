@@ -15,4 +15,11 @@
         <item>eyes can\'t hear silence</item>
         <item>no text, no voice</item>
     </string-array>
+    <string-array name="clapback_taglines">
+        <item>ya gottem</item>
+        <item>boomerang</item>
+        <item>preheated \- now serve</item>
+        <item>your thumbs could never</item>
+        <item>dead air is dead vibes</item>
+    </string-array>
 </resources>

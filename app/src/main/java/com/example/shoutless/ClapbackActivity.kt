@@ -76,7 +76,7 @@ class ClapbackActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    ClapbackScreen()
+                    ClapbackScreen(onFinishActivity = { finish() })
                 }
             }
         }
@@ -84,7 +84,7 @@ class ClapbackActivity : ComponentActivity() {
 }
 
 @Composable
-fun ClapbackScreen(modifier: Modifier = Modifier) {
+fun ClapbackScreen(modifier: Modifier = Modifier, onFinishActivity: () -> Unit) {
     val context = LocalContext.current
     val sharedPreferences = remember { context.getSharedPreferences("shoutless_prefs", Context.MODE_PRIVATE) }
 
@@ -99,8 +99,8 @@ fun ClapbackScreen(modifier: Modifier = Modifier) {
     val clapback4Label by remember { mutableStateOf(sharedPreferences.getString("clapback4_label", "brb") ?: "brb") }
     val clapback4Hidden by remember { mutableStateOf(sharedPreferences.getString("clapback4_hidden", "be right back") ?: "be right back") }
 
-    var customText1 by remember { mutableStateOf("On my way!") }
-    var customText2 by remember { mutableStateOf("Sounds good!") }
+    var customText1 by remember { mutableStateOf(sharedPreferences.getString("custom_text_1", "On my way!") ?: "On my way!") }
+    var customText2 by remember { mutableStateOf(sharedPreferences.getString("custom_text_2", "Sounds good!") ?: "Sounds good!") }
     var showEditDialog by remember { mutableStateOf(false) }
     var textToEditId by remember { mutableStateOf(0) }
     var number by remember { mutableStateOf(1) }
@@ -108,6 +108,7 @@ fun ClapbackScreen(modifier: Modifier = Modifier) {
     fun launchDisplay(text: String) {
         val intent = DisplayActivity.newIntent(context, text, selectedMode)
         context.startActivity(intent)
+        onFinishActivity()
     }
 
     HideSystemBars()
@@ -266,8 +267,10 @@ fun ClapbackScreen(modifier: Modifier = Modifier) {
                 onConfirm = {
                     if (textToEditId == 1) {
                         customText1 = it
+                        sharedPreferences.edit().putString("custom_text_1", it).apply()
                     } else {
                         customText2 = it
+                        sharedPreferences.edit().putString("custom_text_2", it).apply()
                     }
                     showEditDialog = false
                 }
@@ -504,6 +507,6 @@ fun NumberPicker(
 @Composable
 fun ClapbackScreenPreview() {
     ShoutlessTheme {
-        ClapbackScreen()
+        ClapbackScreen(onFinishActivity = {})
     }
 }

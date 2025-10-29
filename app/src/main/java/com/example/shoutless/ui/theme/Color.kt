@@ -34,5 +34,5 @@ val on_background_light = Color(0xFF1B1B1F)
 val on_surface_light = Color(0xFF1B1B1F)
 
 // Surface Variants
-val on_surface_variant_dark = Color(0xFF2D2D2D)
-val on_surface_variant_light = Color(0xFF2D2D2D)
+val on_surface_variant_dark = Color(0xFF4D4D4D)
+val on_surface_variant_light = Color(0xFF4D4D4D)

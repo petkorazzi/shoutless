@@ -31,12 +31,15 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalFontFamilyResolver
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import com.example.shoutless.ui.theme.ShoutlessDisplayTheme
 import com.example.shoutless.util.HideSystemBars
@@ -76,11 +79,7 @@ class DisplayActivity : ComponentActivity() {
                     mode = mode,
                     defaultFontSize = defaultFontSize,
                     maxFontSize = maxFontSize,
-                    onDoubleTap = {
-                        val intent = Intent(this, MainActivity::class.java)
-                        startActivity(intent)
-                        finish()
-                    },
+                    onDoubleTap = { finish() },
                     onTripleTap = {
                         val intent = Intent(this, ClapbackActivity::class.java)
                         startActivity(intent)
@@ -122,6 +121,14 @@ fun DisplayScreen(
     val screenHeightPx = with(density) { (configuration.screenHeightDp.dp - (padding * 2)).toPx() }
 
     val textMeasurer = rememberTextMeasurer()
+    val fontFamilyResolver = LocalFontFamilyResolver.current
+
+    val textStyle = LocalTextStyle.current.copy(
+        textAlign = TextAlign.Center,
+        fontFamily = FontFamily.Default,
+        lineHeight = 1.15.em,
+        platformStyle = androidx.compose.ui.text.PlatformTextStyle(includeFontPadding = false)
+    )
 
     val maxFitFontSize = remember(text, screenWidthPx, screenHeightPx) {
         if (text.isBlank()) {
@@ -129,8 +136,8 @@ fun DisplayScreen(
         } else {
             var size = with(density) { screenHeightPx.toSp() }
             while (size.value > 1f) {
-                val style = TextStyle(fontSize = size, textAlign = TextAlign.Center, lineHeight = size * 1.2f)
-                if (!isTextOverflowing(text, style, screenWidthPx, screenHeightPx, textMeasurer)) {
+                val style = textStyle.copy(fontSize = size)
+                if (!isTextOverflowing(text, style, screenWidthPx, screenHeightPx, textMeasurer, fontFamilyResolver)) {
                     break
                 }
                 size = (size.value * 0.95f).sp
@@ -147,8 +154,8 @@ fun DisplayScreen(
         } else { // Lowkey mode
             var size = defaultFontSize.sp
             while (size.value > 1f) {
-                val style = TextStyle(fontSize = size, textAlign = TextAlign.Center, lineHeight = size * 1.2f)
-                if (!isTextOverflowing(text, style, screenWidthPx, screenHeightPx, textMeasurer)) {
+                val style = textStyle.copy(fontSize = size)
+                if (!isTextOverflowing(text, style, screenWidthPx, screenHeightPx, textMeasurer, fontFamilyResolver)) {
                     break
                 }
                 size = (size.value * 0.95f).sp
@@ -208,11 +215,7 @@ fun DisplayScreen(
             Text(
                 text = text,
                 color = MaterialTheme.colorScheme.onBackground,
-                style = LocalTextStyle.current.copy(
-                    fontSize = dynamicFontSize,
-                    textAlign = TextAlign.Center,
-                    lineHeight = dynamicFontSize * 1.2f
-                ),
+                style = textStyle.copy(fontSize = dynamicFontSize),
                 modifier = Modifier.graphicsLayer {
                     compositingStrategy = CompositingStrategy.Offscreen
                 }
@@ -224,13 +227,16 @@ fun DisplayScreen(
 fun isTextOverflowing(
     text: String,
     style: TextStyle,
-    screenWidthPx: Float,
-    screenHeightPx: Float,
-    textMeasurer: TextMeasurer
+    maxWidth: Float,
+    maxHeight: Float,
+    textMeasurer: TextMeasurer,
+    fontFamilyResolver: FontFamily.Resolver
 ): Boolean {
-    val words = text.split(Regex("\\s+"))
-    val anyWordIsTooWide = words.any { word -> textMeasurer.measure(word, style).size.width > screenWidthPx }
-    val measuredHeight = textMeasurer.measure(text, style, constraints = Constraints(maxWidth = screenWidthPx.toInt())).size.height
-    val textIsTooTall = measuredHeight > screenHeightPx
-    return anyWordIsTooWide || textIsTooTall
+    val layoutResult = textMeasurer.measure(
+        text = text,
+        style = style,
+        constraints = Constraints(maxWidth = maxWidth.toInt()),
+        fontFamilyResolver = fontFamilyResolver
+    )
+    return layoutResult.hasVisualOverflow || layoutResult.size.height > maxHeight
 }

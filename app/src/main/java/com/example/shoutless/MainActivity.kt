@@ -38,11 +38,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -57,6 +56,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.shoutless.ui.theme.ShoutlessTheme
 import com.example.shoutless.util.HideSystemBars
 import com.example.shoutless.util.glow
@@ -72,7 +72,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    HomeScreen()
+                    HomeScreen(mainViewModel = viewModel(viewModelStoreOwner = this))
                 }
             }
         }
@@ -81,8 +81,8 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(modifier: Modifier = Modifier) {
-    var text by remember { mutableStateOf("") }
+fun HomeScreen(modifier: Modifier = Modifier, mainViewModel: MainViewModel) {
+    val text by mainViewModel.text.collectAsState()
     val context = LocalContext.current
     val focusManager = LocalFocusManager.current
     val snackbarHostState = remember { SnackbarHostState() }
@@ -273,7 +273,7 @@ fun HomeScreen(modifier: Modifier = Modifier) {
             ) {
                 OutlinedTextField(
                     value = text,
-                    onValueChange = { text = it },
+                    onValueChange = { mainViewModel.onTextChange(it) },
                     modifier = Modifier
                         .fillMaxSize()
                         .glow(
@@ -293,7 +293,7 @@ fun HomeScreen(modifier: Modifier = Modifier) {
                 )
                 if (text.isNotEmpty()) {
                     IconButton(
-                        onClick = { text = "" },
+                        onClick = { mainViewModel.onTextChange("") },
                         modifier = Modifier
                             .align(Alignment.TopEnd)
                             .padding(8.dp)
@@ -363,6 +363,6 @@ fun ModeButton(
 @Composable
 fun HomeScreenPreview() {
     ShoutlessTheme {
-        HomeScreen()
+        HomeScreen(mainViewModel = viewModel())
     }
 }

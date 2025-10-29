@@ -1,7 +1,6 @@
 package com.example.shoutless
 
 import android.content.Context
-import android.content.SharedPreferences
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -14,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -25,6 +25,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -171,6 +172,17 @@ fun SettingsScreen(
     onClapback4LabelChange: (String) -> Unit,
     onClapback4HiddenChange: (String) -> Unit,
 ) {
+    val tertiaryColor = MaterialTheme.colorScheme.tertiary
+    val clapbackTextFieldColors = TextFieldDefaults.colors(
+        focusedLabelColor = tertiaryColor,
+        cursorColor = tertiaryColor,
+        selectionColors = TextSelectionColors(handleColor = tertiaryColor, backgroundColor = tertiaryColor.copy(alpha = 0.4f)),
+        unfocusedIndicatorColor = tertiaryColor, 
+        focusedIndicatorColor = tertiaryColor, 
+        focusedContainerColor = MaterialTheme.colorScheme.surface, 
+        unfocusedContainerColor = MaterialTheme.colorScheme.surface
+    )
+
     Scaffold {
         paddingValues ->
         LazyColumn(
@@ -293,31 +305,31 @@ fun SettingsScreen(
                     )
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
-                        Text("Clapback Buttons", style = MaterialTheme.typography.titleLarge)
+                        Text("clapback", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.tertiary)
                         Spacer(modifier = Modifier.height(16.dp))
 
                         // Button 1
-                        Text("Button 1", style = MaterialTheme.typography.titleMedium)
-                        OutlinedTextField(value = clapback1Label, onValueChange = onClapback1LabelChange, label = { Text("Label") }, modifier = Modifier.fillMaxWidth())
-                        OutlinedTextField(value = clapback1Hidden, onValueChange = onClapback1HiddenChange, label = { Text("Hidden Text") }, modifier = Modifier.fillMaxWidth())
+                        Text("spark 1", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.tertiary)
+                        OutlinedTextField(value = clapback1Label, onValueChange = onClapback1LabelChange, label = { Text("label") }, modifier = Modifier.fillMaxWidth(), colors = clapbackTextFieldColors)
+                        OutlinedTextField(value = clapback1Hidden, onValueChange = onClapback1HiddenChange, label = { Text("msg txt") }, modifier = Modifier.fillMaxWidth(), colors = clapbackTextFieldColors)
                         Spacer(modifier = Modifier.height(16.dp))
 
                         // Button 2
-                        Text("Button 2", style = MaterialTheme.typography.titleMedium)
-                        OutlinedTextField(value = clapback2Label, onValueChange = onClapback2LabelChange, label = { Text("Label") }, modifier = Modifier.fillMaxWidth())
-                        OutlinedTextField(value = clapback2Hidden, onValueChange = onClapback2HiddenChange, label = { Text("Hidden Text") }, modifier = Modifier.fillMaxWidth())
+                        Text("spark 2", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.tertiary)
+                        OutlinedTextField(value = clapback2Label, onValueChange = onClapback2LabelChange, label = { Text("label") }, modifier = Modifier.fillMaxWidth(), colors = clapbackTextFieldColors)
+                        OutlinedTextField(value = clapback2Hidden, onValueChange = onClapback2HiddenChange, label = { Text("msg txt") }, modifier = Modifier.fillMaxWidth(), colors = clapbackTextFieldColors)
                         Spacer(modifier = Modifier.height(16.dp))
 
                         // Button 3
-                        Text("Button 3", style = MaterialTheme.typography.titleMedium)
-                        OutlinedTextField(value = clapback3Label, onValueChange = onClapback3LabelChange, label = { Text("Label") }, modifier = Modifier.fillMaxWidth())
-                        OutlinedTextField(value = clapback3Hidden, onValueChange = onClapback3HiddenChange, label = { Text("Hidden Text") }, modifier = Modifier.fillMaxWidth())
+                        Text("spark 3", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.tertiary)
+                        OutlinedTextField(value = clapback3Label, onValueChange = onClapback3LabelChange, label = { Text("label") }, modifier = Modifier.fillMaxWidth(), colors = clapbackTextFieldColors)
+                        OutlinedTextField(value = clapback3Hidden, onValueChange = onClapback3HiddenChange, label = { Text("msg txt") }, modifier = Modifier.fillMaxWidth(), colors = clapbackTextFieldColors)
                         Spacer(modifier = Modifier.height(16.dp))
 
                         // Button 4
-                        Text("Button 4", style = MaterialTheme.typography.titleMedium)
-                        OutlinedTextField(value = clapback4Label, onValueChange = onClapback4LabelChange, label = { Text("Label") }, modifier = Modifier.fillMaxWidth())
-                        OutlinedTextField(value = clapback4Hidden, onValueChange = onClapback4HiddenChange, label = { Text("Hidden Text") }, modifier = Modifier.fillMaxWidth())
+                        Text("spark 4", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.tertiary)
+                        OutlinedTextField(value = clapback4Label, onValueChange = onClapback4LabelChange, label = { Text("label") }, modifier = Modifier.fillMaxWidth(), colors = clapbackTextFieldColors)
+                        OutlinedTextField(value = clapback4Hidden, onValueChange = onClapback4HiddenChange, label = { Text("msg txt") }, modifier = Modifier.fillMaxWidth(), colors = clapbackTextFieldColors)
                     }
                 }
             }

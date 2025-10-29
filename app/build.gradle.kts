@@ -58,6 +58,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.text.google.fonts)
     implementation("androidx.compose.material:material-icons-extended:1.7.8")
     implementation(libs.androidx.core.splashscreen)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

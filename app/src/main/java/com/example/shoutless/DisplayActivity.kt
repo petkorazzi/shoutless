@@ -135,7 +135,11 @@ fun DisplayScreen(
             alignment = LineHeightStyle.Alignment.Center,
             trim = LineHeightStyle.Trim.Both
         ),
-        lineBreak = LineBreak.Heading,
+        lineBreak = LineBreak(
+            strategy = LineBreak.Strategy.HighQuality,
+            strictness = LineBreak.Strictness.Loose,
+            wordBreak = LineBreak.WordBreak.Phrase
+        ),
         hyphens = Hyphens.None
     )
 

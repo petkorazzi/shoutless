@@ -26,8 +26,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.CompositingStrategy
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
@@ -36,6 +34,9 @@ import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.text.style.Hyphens
+import androidx.compose.ui.text.style.LineBreak
+import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
@@ -127,7 +128,15 @@ fun DisplayScreen(
         textAlign = TextAlign.Center,
         fontFamily = FontFamily.Default,
         lineHeight = 1.15.em,
-        platformStyle = androidx.compose.ui.text.PlatformTextStyle(includeFontPadding = false)
+        platformStyle = androidx.compose.ui.text.PlatformTextStyle(
+            includeFontPadding = false
+        ),
+        lineHeightStyle = LineHeightStyle(
+            alignment = LineHeightStyle.Alignment.Center,
+            trim = LineHeightStyle.Trim.Both
+        ),
+        lineBreak = LineBreak.Heading,
+        hyphens = Hyphens.None
     )
 
     val maxFitFontSize = remember(text, screenWidthPx, screenHeightPx) {
@@ -215,10 +224,7 @@ fun DisplayScreen(
             Text(
                 text = text,
                 color = MaterialTheme.colorScheme.onBackground,
-                style = textStyle.copy(fontSize = dynamicFontSize),
-                modifier = Modifier.graphicsLayer {
-                    compositingStrategy = CompositingStrategy.Offscreen
-                }
+                style = textStyle.copy(fontSize = dynamicFontSize)
             )
         }
     }
@@ -229,13 +235,13 @@ fun isTextOverflowing(
     style: TextStyle,
     maxWidth: Float,
     maxHeight: Float,
-    textMeasurer: TextMeasurer,
+    textMeasurer: androidx.compose.ui.text.TextMeasurer,
     fontFamilyResolver: FontFamily.Resolver
 ): Boolean {
     val layoutResult = textMeasurer.measure(
         text = text,
         style = style,
-        constraints = Constraints(maxWidth = maxWidth.toInt()),
+        constraints = Constraints(maxWidth = maxWidth.toInt(), maxHeight = maxHeight.toInt()),
         fontFamilyResolver = fontFamilyResolver
     )
     return layoutResult.hasVisualOverflow || layoutResult.size.height > maxHeight

@@ -31,6 +31,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
@@ -56,6 +57,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.shoutless.ui.theme.ShoutlessTheme
 import com.example.shoutless.util.HideSystemBars
@@ -111,7 +113,15 @@ fun HomeScreen(modifier: Modifier = Modifier, mainViewModel: MainViewModel) {
                 )
             )
         },
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
+        snackbarHost = {
+            SnackbarHost(snackbarHostState) { data ->
+                Snackbar(
+                    snackbarData = data,
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                )
+            }
+        }
     ) { paddingValues ->
         Column(
             modifier = modifier
@@ -226,7 +236,7 @@ fun HomeScreen(modifier: Modifier = Modifier, mainViewModel: MainViewModel) {
             ) {
                 Box(
                     modifier = Modifier
-                        .size(85.dp)
+                        .size(115.dp)
                         .glow(
                             color = MaterialTheme.colorScheme.tertiary,
                             radius = 15.dp,
@@ -242,7 +252,7 @@ fun HomeScreen(modifier: Modifier = Modifier, mainViewModel: MainViewModel) {
                             color = MaterialTheme.colorScheme.tertiary,
                             shape = RoundedCornerShape(24.dp)
                         )
-                        .clickable {
+                        .clickable { 
                             val intent = Intent(context, ClapbackActivity::class.java)
                             context.startActivity(intent)
                         },
@@ -252,13 +262,13 @@ fun HomeScreen(modifier: Modifier = Modifier, mainViewModel: MainViewModel) {
                         Icon(
                             imageVector = Icons.Rounded.Bolt,
                             contentDescription = "Clapback Mode",
-                            modifier = Modifier.size(57.dp),
+                            modifier = Modifier.size(70.dp),
                             tint = MaterialTheme.colorScheme.tertiary
                         )
                         Text(
                             text = "clapback",
                             color = MaterialTheme.colorScheme.tertiary,
-                            style = MaterialTheme.typography.titleSmall,
+                            style = MaterialTheme.typography.titleMedium,
                             modifier = Modifier.offset(y = (-7).dp)
                         )
                     }
@@ -363,6 +373,6 @@ fun ModeButton(
 @Composable
 fun HomeScreenPreview() {
     ShoutlessTheme {
-        HomeScreen(mainViewModel = viewModel())
+        HomeScreen(mainViewModel = MainViewModel(SavedStateHandle()))
     }
 }

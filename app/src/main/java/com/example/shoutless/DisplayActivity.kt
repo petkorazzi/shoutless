@@ -135,11 +135,7 @@ fun DisplayScreen(
             alignment = LineHeightStyle.Alignment.Center,
             trim = LineHeightStyle.Trim.Both
         ),
-        lineBreak = LineBreak(
-            strategy = LineBreak.Strategy.HighQuality,
-            strictness = LineBreak.Strictness.Loose,
-            wordBreak = LineBreak.WordBreak.Phrase
-        ),
+        lineBreak = LineBreak.Heading,
         hyphens = Hyphens.None
     )
 
@@ -239,9 +235,21 @@ fun isTextOverflowing(
     style: TextStyle,
     maxWidth: Float,
     maxHeight: Float,
-    textMeasurer: androidx.compose.ui.text.TextMeasurer,
+    textMeasurer: TextMeasurer,
     fontFamilyResolver: FontFamily.Resolver
 ): Boolean {
+    // First, check if any single word is wider than the container.
+    // If it is, the font is too large, because that word would have to break.
+    text.split(Regex("\\s+")).forEach { word ->
+        if (word.isNotEmpty()) {
+            val wordLayout = textMeasurer.measure(text = word, style = style)
+            if (wordLayout.size.width > maxWidth) {
+                return true // This font size is too big, a word will inevitably break.
+            }
+        }
+    }
+
+    // If all individual words fit, now check if the whole text block fits.
     val layoutResult = textMeasurer.measure(
         text = text,
         style = style,

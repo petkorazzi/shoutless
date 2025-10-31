@@ -36,8 +36,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.content.edit
 import com.example.shoutless.ui.theme.ShoutlessTheme
 import com.example.shoutless.util.HideSystemBars
+import kotlin.math.roundToInt
 
 class SettingsActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -90,56 +92,58 @@ fun SettingsRoute() {
         clapback4Label = clapback4Label,
         clapback4Hidden = clapback4Hidden,
         onDefaultFontSizeChange = {
-            defaultFontSize = it
-            sharedPreferences.edit().putInt("lowkey_default_font_size", it.toInt()).apply()
-            if (it > maxFontSize) {
-                maxFontSize = it
-                sharedPreferences.edit().putInt("lowkey_max_font_size", it.toInt()).apply()
+            val snappedValue = ((it / 5).roundToInt() * 5f).coerceIn(10f, 50f)
+            defaultFontSize = snappedValue
+            sharedPreferences.edit { putInt("lowkey_default_font_size", snappedValue.roundToInt()) }
+            if (snappedValue > maxFontSize) {
+                maxFontSize = snappedValue
+                sharedPreferences.edit { putInt("lowkey_max_font_size", snappedValue.roundToInt()) }
             }
         },
         onMaxFontSizeChange = {
-            maxFontSize = it
-            sharedPreferences.edit().putInt("lowkey_max_font_size", it.toInt()).apply()
+            val snappedValue = ((it / 5).roundToInt() * 5f).coerceIn(defaultFontSize, 150f)
+            maxFontSize = snappedValue
+            sharedPreferences.edit { putInt("lowkey_max_font_size", snappedValue.roundToInt()) }
         },
         onForceBrightnessChange = {
             forceBrightness = it
-            sharedPreferences.edit().putBoolean("blast_force_brightness", it).apply()
+            sharedPreferences.edit { putBoolean("blast_force_brightness", it) }
         },
         onForceLandscapeChange = {
             forceLandscape = it
-            sharedPreferences.edit().putBoolean("blast_force_landscape", it).apply()
+            sharedPreferences.edit { putBoolean("blast_force_landscape", it) }
         },
         onClapback1LabelChange = {
             clapback1Label = it
-            sharedPreferences.edit().putString("clapback1_label", it).apply()
+            sharedPreferences.edit { putString("clapback1_label", it) }
         },
         onClapback1HiddenChange = {
             clapback1Hidden = it
-            sharedPreferences.edit().putString("clapback1_hidden", it).apply()
+            sharedPreferences.edit { putString("clapback1_hidden", it) }
         },
         onClapback2LabelChange = {
             clapback2Label = it
-            sharedPreferences.edit().putString("clapback2_label", it).apply()
+            sharedPreferences.edit { putString("clapback2_label", it) }
         },
         onClapback2HiddenChange = {
             clapback2Hidden = it
-            sharedPreferences.edit().putString("clapback2_hidden", it).apply()
+            sharedPreferences.edit { putString("clapback2_hidden", it) }
         },
         onClapback3LabelChange = {
             clapback3Label = it
-            sharedPreferences.edit().putString("clapback3_label", it).apply()
+            sharedPreferences.edit { putString("clapback3_label", it) }
         },
         onClapback3HiddenChange = {
             clapback3Hidden = it
-            sharedPreferences.edit().putString("clapback3_hidden", it).apply()
+            sharedPreferences.edit { putString("clapback3_hidden", it) }
         },
         onClapback4LabelChange = {
             clapback4Label = it
-            sharedPreferences.edit().putString("clapback4_label", it).apply()
+            sharedPreferences.edit { putString("clapback4_label", it) }
         },
         onClapback4HiddenChange = {
             clapback4Hidden = it
-            sharedPreferences.edit().putString("clapback4_hidden", it).apply()
+            sharedPreferences.edit { putString("clapback4_hidden", it) }
         }
     )
 }
@@ -207,7 +211,7 @@ fun SettingsScreen(
                         Spacer(modifier = Modifier.height(16.dp))
 
                         // Default Font Size Slider
-                        Text("default volume: ${defaultFontSize.toInt()}", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.primary)
+                        Text("default volume: ${defaultFontSize.roundToInt()}", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.primary)
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -226,13 +230,13 @@ fun SettingsScreen(
                         Spacer(modifier = Modifier.height(16.dp))
 
                         // Max Font Size Slider
-                        Text("max volume: ${maxFontSize.toInt()}", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.primary)
+                        Text("max volume: ${maxFontSize.roundToInt()}", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.primary)
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(defaultFontSize.toInt().toString(), style = MaterialTheme.typography.labelSmall)
+                            Text(defaultFontSize.roundToInt().toString(), style = MaterialTheme.typography.labelSmall)
                             Slider(
                                 value = maxFontSize,
                                 onValueChange = onMaxFontSizeChange,

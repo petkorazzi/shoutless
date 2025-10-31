@@ -135,7 +135,7 @@ fun DisplayScreen(
             alignment = LineHeightStyle.Alignment.Center,
             trim = LineHeightStyle.Trim.Both
         ),
-        lineBreak = LineBreak.Heading,
+        lineBreak = LineBreak.Simple,
         hyphens = Hyphens.None
     )
 
@@ -235,7 +235,7 @@ fun isTextOverflowing(
     style: TextStyle,
     maxWidth: Float,
     maxHeight: Float,
-    textMeasurer: TextMeasurer,
+    textMeasurer: androidx.compose.ui.text.TextMeasurer,
     fontFamilyResolver: FontFamily.Resolver
 ): Boolean {
     // First, check if any single word is wider than the container.

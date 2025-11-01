@@ -147,140 +147,151 @@ fun ClapbackScreen(modifier: Modifier = Modifier, onFinishActivity: () -> Unit) 
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Header
-            Text(
-                buildAnnotatedString {
-                    withStyle(
-                        style = SpanStyle(
-                            color = MaterialTheme.colorScheme.tertiary,
-                            shadow = Shadow(color = MaterialTheme.colorScheme.tertiary, blurRadius = 20f)
-                        )
-                    ) {
-                        append("clap")
-                    }
-                    withStyle(
-                        style = SpanStyle(
-                            color = MaterialTheme.colorScheme.primary,
-                            shadow = Shadow(color = MaterialTheme.colorScheme.primary, blurRadius = 20f)
-                        )
-                    ) {
-                        append("back")
-                    }
-                },
-                style = MaterialTheme.typography.displayLarge
-            )
-
-            // Tagline
-            val taglines = context.resources.getStringArray(R.array.clapback_taglines)
-            val tagline = remember { taglines.random() }
-
-            Text(
-                text = tagline,
-                modifier = Modifier.padding(top = 8.dp, bottom = 32.dp),
-                style = MaterialTheme.typography.bodyLarge.copy(
-                    fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
-                    shadow = Shadow(color = MaterialTheme.colorScheme.onBackground, blurRadius = 10f)
-                )
-            )
-
-            // Segmented Toggle
-            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth(0.8f)) {
-                SegmentedButton(
-                    modifier = if (selectedMode == "Lowkey") Modifier.glow(
-                        color = MaterialTheme.colorScheme.primary,
-                        radius = 15.dp,
-                        shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2),
-                        alpha = 0.5f
-                    ) else Modifier,
-                    selected = selectedMode == "Lowkey",
-                    onClick = { selectedMode = "Lowkey" },
-                    shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2),
-                    colors = SegmentedButtonDefaults.colors(
-                        activeContainerColor = MaterialTheme.colorScheme.primary,
-                        activeContentColor = MaterialTheme.colorScheme.onPrimary,
-                        activeBorderColor = MaterialTheme.colorScheme.primary,
-                        inactiveContainerColor = MaterialTheme.colorScheme.surface,
-                        inactiveContentColor = MaterialTheme.colorScheme.primary,
-                        inactiveBorderColor = MaterialTheme.colorScheme.primary
-                    )
-                ) {
-                    Text("lowkey", style = MaterialTheme.typography.labelLarge)
-                }
-                SegmentedButton(
-                    modifier = if (selectedMode == "Blast") Modifier.glow(
-                        color = MaterialTheme.colorScheme.secondary,
-                        radius = 15.dp,
-                        shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2),
-                        alpha = 0.5f
-                    ) else Modifier,
-                    selected = selectedMode == "Blast",
-                    onClick = { selectedMode = "Blast" },
-                    shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2),
-                    colors = SegmentedButtonDefaults.colors(
-                        activeContainerColor = MaterialTheme.colorScheme.secondary,
-                        activeContentColor = MaterialTheme.colorScheme.onSecondary,
-                        activeBorderColor = MaterialTheme.colorScheme.secondary,
-                        inactiveContainerColor = MaterialTheme.colorScheme.surface,
-                        inactiveContentColor = MaterialTheme.colorScheme.secondary,
-                        inactiveBorderColor = MaterialTheme.colorScheme.secondary
-                    )
-                ) {
-                    Text("BLAST", style = MaterialTheme.typography.labelLarge)
-                }
-            }
-
-
-            // Buttons
             val buttonTextColor = if (selectedMode == "Lowkey") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
             val buttonBorderColor = if (selectedMode == "Lowkey") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
 
-            Column(modifier = Modifier.padding(top = 32.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    ClapbackButton(text = clapback1Label, textColor = buttonTextColor, borderColor = buttonBorderColor, onClick = { launchDisplay(clapback1Hidden) })
-                    ClapbackButton(text = clapback2Label, textColor = buttonTextColor, borderColor = buttonBorderColor, onClick = { launchDisplay(clapback2Hidden) })
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                // Header
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        buildAnnotatedString {
+                            withStyle(
+                                style = SpanStyle(
+                                    color = MaterialTheme.colorScheme.tertiary,
+                                    shadow = Shadow(color = MaterialTheme.colorScheme.tertiary, blurRadius = 20f)
+                                )
+                            ) {
+                                append("clap")
+                            }
+                            withStyle(
+                                style = SpanStyle(
+                                    color = MaterialTheme.colorScheme.primary,
+                                    shadow = Shadow(color = MaterialTheme.colorScheme.primary, blurRadius = 20f)
+                                )
+                            ) {
+                                append("back")
+                            }
+                        },
+                        style = MaterialTheme.typography.displayLarge
+                    )
+
+                    // Tagline
+                    val taglines = context.resources.getStringArray(R.array.clapback_taglines)
+                    val tagline = remember { taglines.random() }
+
+                    Text(
+                        text = tagline,
+                        modifier = Modifier.offset(y = (-8).dp),
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
+                            shadow = Shadow(color = MaterialTheme.colorScheme.onBackground, blurRadius = 10f)
+                        )
+                    )
                 }
-                Row(modifier = Modifier.padding(top = 16.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    ClapbackButton(text = clapback3Label, textColor = buttonTextColor, borderColor = buttonBorderColor, onClick = { launchDisplay(clapback3Hidden) })
-                    ClapbackButton(text = clapback4Label, textColor = buttonTextColor, borderColor = buttonBorderColor, onClick = { launchDisplay(clapback4Hidden) })
+
+                // Segmented Toggle
+                SingleChoiceSegmentedButtonRow(modifier = Modifier
+                    .fillMaxWidth(0.8f)
+                    .padding(top = 32.dp)) {
+                    SegmentedButton(
+                        modifier = if (selectedMode == "Lowkey") Modifier.glow(
+                            color = MaterialTheme.colorScheme.primary,
+                            radius = 15.dp,
+                            shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2),
+                            alpha = 0.5f
+                        ) else Modifier,
+                        selected = selectedMode == "Lowkey",
+                        onClick = { selectedMode = "Lowkey" },
+                        shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2),
+                        colors = SegmentedButtonDefaults.colors(
+                            activeContainerColor = MaterialTheme.colorScheme.primary,
+                            activeContentColor = MaterialTheme.colorScheme.onPrimary,
+                            activeBorderColor = MaterialTheme.colorScheme.primary,
+                            inactiveContainerColor = MaterialTheme.colorScheme.surface,
+                            inactiveContentColor = MaterialTheme.colorScheme.primary,
+                            inactiveBorderColor = MaterialTheme.colorScheme.primary
+                        )
+                    ) {
+                        Text("lowkey", style = MaterialTheme.typography.labelLarge)
+                    }
+                    SegmentedButton(
+                        modifier = if (selectedMode == "Blast") Modifier.glow(
+                            color = MaterialTheme.colorScheme.secondary,
+                            radius = 15.dp,
+                            shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2),
+                            alpha = 0.5f
+                        ) else Modifier,
+                        selected = selectedMode == "Blast",
+                        onClick = { selectedMode = "Blast" },
+                        shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2),
+                        colors = SegmentedButtonDefaults.colors(
+                            activeContainerColor = MaterialTheme.colorScheme.secondary,
+                            activeContentColor = MaterialTheme.colorScheme.onSecondary,
+                            activeBorderColor = MaterialTheme.colorScheme.secondary,
+                            inactiveContainerColor = MaterialTheme.colorScheme.surface,
+                            inactiveContentColor = MaterialTheme.colorScheme.secondary,
+                            inactiveBorderColor = MaterialTheme.colorScheme.secondary
+                        )
+                    ) {
+                        Text("BLAST", style = MaterialTheme.typography.labelLarge)
+                    }
+                }
+
+
+                // Buttons
+                Column(modifier = Modifier.padding(top = 32.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                        ClapbackButton(text = clapback1Label, textColor = buttonTextColor, borderColor = buttonBorderColor, onClick = { launchDisplay(clapback1Hidden) })
+                        ClapbackButton(text = clapback2Label, textColor = buttonTextColor, borderColor = buttonBorderColor, onClick = { launchDisplay(clapback2Hidden) })
+                    }
+                    Row(modifier = Modifier.padding(top = 16.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                        ClapbackButton(text = clapback3Label, textColor = buttonTextColor, borderColor = buttonBorderColor, onClick = { launchDisplay(clapback3Hidden) })
+                        ClapbackButton(text = clapback4Label, textColor = buttonTextColor, borderColor = buttonBorderColor, onClick = { launchDisplay(clapback4Hidden) })
+                    }
+                }
+
+                // Custom Text Buttons
+                Column(
+                    modifier = Modifier.padding(top = 32.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    CustomTextButton(
+                        text = customText1,
+                        borderColor = buttonBorderColor,
+                        onClick = { launchDisplay(customText1) },
+                        onEditClick = {
+                            textToEditId = 1
+                            showEditDialog = true
+                        }
+                    )
+                    CustomTextButton(
+                        text = customText2,
+                        borderColor = buttonBorderColor,
+                        onClick = { launchDisplay(customText2) },
+                        onEditClick = {
+                            textToEditId = 2
+                            showEditDialog = true
+                        }
+                    )
                 }
             }
 
-            // Custom Text Buttons
-            Column(
-                modifier = Modifier.padding(top = 32.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+                contentAlignment = Alignment.Center
             ) {
-                CustomTextButton(
-                    text = customText1,
+                NumberPicker(
+                    value = number,
+                    onValueChange = { if (it >= 1) number = it },
                     borderColor = buttonBorderColor,
-                    onClick = { launchDisplay(customText1) },
-                    onEditClick = {
-                        textToEditId = 1
-                        showEditDialog = true
-                    }
-                )
-                CustomTextButton(
-                    text = customText2,
-                    borderColor = buttonBorderColor,
-                    onClick = { launchDisplay(customText2) },
-                    onEditClick = {
-                        textToEditId = 2
-                        showEditDialog = true
-                    }
+                    onNumberClick = { launchDisplay(number.toString()) }
                 )
             }
-
-            NumberPicker(
-                value = number,
-                onValueChange = { if (it >= 1) number = it },
-                borderColor = buttonBorderColor,
-                onNumberClick = { launchDisplay(number.toString()) },
-                modifier = Modifier.padding(top = 32.dp)
-            )
         }
 
         if (showEditDialog) {

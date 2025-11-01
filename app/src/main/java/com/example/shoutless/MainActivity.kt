@@ -45,6 +45,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.input.pointer.pointerInput
@@ -54,6 +55,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -63,6 +65,7 @@ import com.example.shoutless.ui.theme.ShoutlessTheme
 import com.example.shoutless.util.HideSystemBars
 import com.example.shoutless.util.glow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -116,10 +119,15 @@ fun HomeScreen(modifier: Modifier = Modifier, mainViewModel: MainViewModel) {
         snackbarHost = {
             SnackbarHost(snackbarHostState) { data ->
                 Snackbar(
-                    snackbarData = data,
                     containerColor = MaterialTheme.colorScheme.secondaryContainer,
                     contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                )
+                ) {
+                    Text(
+                        text = data.visuals.message,
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center,
+                    )
+                }
             }
         }
     ) { paddingValues ->
@@ -197,7 +205,9 @@ fun HomeScreen(modifier: Modifier = Modifier, mainViewModel: MainViewModel) {
                             if (text.isBlank()) {
                                 val messages = context.resources.getStringArray(R.array.toast_messages)
                                 scope.launch {
-                                    snackbarHostState.showSnackbar(messages.random())
+                                    withTimeoutOrNull(2000) {
+                                        snackbarHostState.showSnackbar(messages.random())
+                                    }
                                 }
                             } else {
                                 val intent = DisplayActivity.newIntent(context, text, "Lowkey")
@@ -216,7 +226,9 @@ fun HomeScreen(modifier: Modifier = Modifier, mainViewModel: MainViewModel) {
                             if (text.isBlank()) {
                                 val messages = context.resources.getStringArray(R.array.toast_messages)
                                 scope.launch {
-                                    snackbarHostState.showSnackbar(messages.random())
+                                    withTimeoutOrNull(2000) {
+                                        snackbarHostState.showSnackbar(messages.random())
+                                    }
                                 }
                             } else {
                                 val intent = DisplayActivity.newIntent(context, text, "Blast")
@@ -236,13 +248,14 @@ fun HomeScreen(modifier: Modifier = Modifier, mainViewModel: MainViewModel) {
             ) {
                 Box(
                     modifier = Modifier
-                        .size(115.dp)
+                        .size(85.dp)
                         .glow(
                             color = MaterialTheme.colorScheme.tertiary,
                             radius = 15.dp,
                             shape = RoundedCornerShape(24.dp),
                             alpha = 0.5f
                         )
+                        .clip(RoundedCornerShape(24.dp))
                         .background(
                             color = MaterialTheme.colorScheme.surface,
                             shape = RoundedCornerShape(24.dp)
@@ -262,13 +275,13 @@ fun HomeScreen(modifier: Modifier = Modifier, mainViewModel: MainViewModel) {
                         Icon(
                             imageVector = Icons.Rounded.Bolt,
                             contentDescription = "Clapback Mode",
-                            modifier = Modifier.size(70.dp),
+                            modifier = Modifier.size(57.dp),
                             tint = MaterialTheme.colorScheme.tertiary
                         )
                         Text(
                             text = "clapback",
                             color = MaterialTheme.colorScheme.tertiary,
-                            style = MaterialTheme.typography.titleMedium,
+                            style = MaterialTheme.typography.titleSmall,
                             modifier = Modifier.offset(y = (-7).dp)
                         )
                     }
@@ -291,7 +304,8 @@ fun HomeScreen(modifier: Modifier = Modifier, mainViewModel: MainViewModel) {
                             radius = 10.dp,
                             shape = RoundedCornerShape(24.dp),
                             alpha = 0.5f
-                        ),
+                        )
+                        .clip(RoundedCornerShape(24.dp)),
                     shape = RoundedCornerShape(24.dp),
                     placeholder = { Text("Enter text") },
                     colors = OutlinedTextFieldDefaults.colors(
@@ -335,6 +349,7 @@ fun ModeButton(
                 shape = RoundedCornerShape(32.dp),
                 alpha = 0.5f
             )
+            .clip(RoundedCornerShape(32.dp))
             .background(
                 color = MaterialTheme.colorScheme.surface,
                 shape = RoundedCornerShape(32.dp)

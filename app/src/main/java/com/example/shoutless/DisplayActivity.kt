@@ -13,6 +13,7 @@ import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width // for scaling fix
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -30,7 +31,6 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFontFamilyResolver
-import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.rememberTextMeasurer
@@ -120,6 +120,9 @@ fun DisplayScreen(
 
     val screenWidthPx = with(density) { (configuration.screenWidthDp.dp - (padding * 2)).toPx() }
     val screenHeightPx = with(density) { (configuration.screenHeightDp.dp - (padding * 2)).toPx() }
+
+    // Attempt to fix scaling/line-break issues in Landscape orientation
+    val screenWidthDp = configuration.screenWidthDp.dp - (padding * 2)
 
     val textMeasurer = rememberTextMeasurer()
     val fontFamilyResolver = LocalFontFamilyResolver.current
@@ -224,6 +227,8 @@ fun DisplayScreen(
             Text(
                 text = text,
                 color = MaterialTheme.colorScheme.onBackground,
+                // Apply the scaling fix
+                modifier = Modifier.width(screenWidthDp),
                 style = textStyle.copy(fontSize = dynamicFontSize)
             )
         }

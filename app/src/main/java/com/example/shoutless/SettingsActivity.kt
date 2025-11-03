@@ -36,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.font.FontWeight
 import androidx.core.content.edit
 import com.example.shoutless.ui.theme.ShoutlessTheme
 import com.example.shoutless.util.HideSystemBars
@@ -258,7 +259,7 @@ fun SettingsScreen(
                     )
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
-                        Text("BLAST", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.secondary)
+                        Text("BLAST", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.secondary)
                         Spacer(modifier = Modifier.height(16.dp))
 
                         // Force Max Brightness Toggle

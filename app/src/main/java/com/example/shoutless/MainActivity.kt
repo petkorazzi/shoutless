@@ -21,7 +21,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Bolt
 import androidx.compose.material.icons.rounded.Clear
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -50,6 +49,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
@@ -66,6 +66,11 @@ import com.example.shoutless.util.HideSystemBars
 import com.example.shoutless.util.glow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.DisposableEffect
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -92,6 +97,24 @@ fun HomeScreen(modifier: Modifier = Modifier, mainViewModel: MainViewModel) {
     val focusManager = LocalFocusManager.current
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+
+    // START: Refreshable Tagline Logic
+    val taglines = remember { context.resources.getStringArray(R.array.taglines) }
+    var tagline by remember { mutableStateOf(taglines.random()) }
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                tagline = taglines.random()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+    // END: Refreshable Tagline Logic
 
     HideSystemBars()
 
@@ -173,8 +196,9 @@ fun HomeScreen(modifier: Modifier = Modifier, mainViewModel: MainViewModel) {
                         style = MaterialTheme.typography.displayLarge
                     )
 
-                    val taglines = context.resources.getStringArray(R.array.taglines)
-                    val tagline = remember { taglines.random() }
+                    // Old tagline stuff
+                    // val taglines = context.resources.getStringArray(R.array.taglines)
+                    // val tagline = remember { taglines.random() }
 
                     Text(
                         text = tagline,
@@ -248,7 +272,7 @@ fun HomeScreen(modifier: Modifier = Modifier, mainViewModel: MainViewModel) {
             ) {
                 Box(
                     modifier = Modifier
-                        .size(85.dp)
+                        .size(100.dp)
                         .glow(
                             color = MaterialTheme.colorScheme.tertiary,
                             radius = 15.dp,
@@ -273,16 +297,17 @@ fun HomeScreen(modifier: Modifier = Modifier, mainViewModel: MainViewModel) {
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Icon(
-                            imageVector = Icons.Rounded.Bolt,
+                            // imageVector = Icons.Rounded.Replay,
+                            painter = painterResource(id = R.drawable.quick_phrases_24px),
                             contentDescription = "Clapback Mode",
-                            modifier = Modifier.size(57.dp),
+                            modifier = Modifier.size(66.dp),
                             tint = MaterialTheme.colorScheme.tertiary
                         )
                         Text(
                             text = "clapback",
                             color = MaterialTheme.colorScheme.tertiary,
-                            style = MaterialTheme.typography.titleSmall,
-                            modifier = Modifier.offset(y = (-7).dp)
+                            style = MaterialTheme.typography.titleMedium,
+                            modifier = Modifier.offset(y = (-8).dp)
                         )
                     }
                 }

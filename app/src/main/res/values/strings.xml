@@ -21,11 +21,13 @@
         <item>glow and behold</item>
         <item>font of all volume</item>
         <item>shout in lowercase</item>
+        <item>future viral comment</item>
         <item>for the ones in the back row</item>
         <item>speech glow\-up</item>
         <item>say it louder</item>
         <item>shout in lowercase</item>
         <item>font go brrr</item>
+        <item>demonetized</item>
         <item>louder than a soundcloud rapper</item>
         <item>talk so bright they gotta wear shades</item>
         <item>a \+10 charisma buff</item>
@@ -35,22 +37,27 @@
         <item>rizz \'em with the prism</item>
         <item>delete npc nod</item>
         <item>yap in 4k</item>
+        <item>don\'t get ratio\'d</item>
     </string-array>
     <string-array name="toast_messages">
         <item>eyes can\'t hear silence</item>
         <item>no text, no voice</item>
         <item>oops\! all void.</item>
+        <item>aaaiiirrrbbbaaallllll</item>
         <item>hello darkness my old friend</item>
         <item>no\-look pass failed</item>
         <item>wurds iz hard</item>
         <item>it\'s giving void</item>
         <item>and you oop\-</item>
         <item>chat is muted</item>
+        <item>hitting enter on raw air</item>
         <item>ya can\'t ghost with light</item>
         <item>vibe check failed</item>
     </string-array>
     <string-array name="clapback_taglines">
         <item>ya gottem</item>
+        <item>roll for initiative</item>
+        <item>on fleek</item>
         <item>boomerang</item>
         <item>preheated \- now serve</item>
         <item>your thumbs could never</item>
@@ -59,13 +66,29 @@
         <item>low effort, high impact</item>
         <item>yeah, we been knew</item>
         <item>it\'s on loop</item>
+        <item>clip this</item>
         <item>default mood</item>
         <item>it just is</item>
+        <item>speaking any\% WR runs</item>
         <item>already hitting send</item>
         <item>no notes</item>
+        <item>first</item>
+        <item>smash that chat button</item>
+        <item>choose your fighter</item>
     </string-array>
     <string-array name="settings_taglines">
-        <item>change stuff</item>
-        <item>do it different</item>
+        <item>where the magic happens</item>
+        <item>because chaos needs boundaries</item>
+        <item>rizz it up</item>
+        <item>switch it up</item>
+        <item>toggle like it\'s hot</item>
+        <item>control yourself</item>
+        <item>moodulators</item>
+        <item>quantum toggling</item>
+        <item>menuver complete</item>
+        <item>adjustice league</item>
+        <item>cache me ousside</item>
+        <item>challenging heisenberg</item>
+        <item>toggle swift \(taylor\'s version\)</item>
     </string-array>
 </resources>

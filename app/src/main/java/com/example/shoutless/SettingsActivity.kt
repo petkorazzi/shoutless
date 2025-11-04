@@ -1,5 +1,6 @@
 package com.example.shoutless
 
+import android.app.Application
 import android.content.Context
 import android.content.pm.ActivityInfo
 import android.os.Bundle
@@ -14,10 +15,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.selection.TextSelectionColors
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -32,17 +32,16 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -50,7 +49,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.shoutless.ui.theme.ShoutlessTheme
 import com.example.shoutless.util.HideSystemBars
 import kotlin.math.roundToInt
-import kotlin.random.Random
 
 class SettingsActivity : ComponentActivity() {
     companion object {
@@ -86,17 +84,22 @@ class SettingsActivity : ComponentActivity() {
 }
 
 @Composable
-fun SettingsRoute(settingsViewModel: SettingsViewModel = viewModel(factory = SettingsViewModel.Factory(LocalContext.current))) {
+fun SettingsRoute(
+    settingsViewModel: SettingsViewModel = viewModel(
+        factory = SettingsViewModel.Factory(
+            application = LocalContext.current.applicationContext as Application,
+            prefs = LocalContext.current.getSharedPreferences(SettingsActivity.PREFS_NAME, Context.MODE_PRIVATE)
+        )
+    )
+) {
     val uiState by settingsViewModel.uiState.collectAsState()
-    val context = LocalContext.current
-    val taglines = remember { context.resources.getStringArray(R.array.settings_taglines) }
-    val randomTagline = remember { taglines[Random.nextInt(taglines.size)] }
+    val tagline by settingsViewModel.randomTagline.collectAsState()
 
     HideSystemBars()
 
     SettingsScreen(
         uiState = uiState,
-        tagline = randomTagline,
+        tagline = tagline,
         onDefaultFontSizeChange = settingsViewModel::updateDefaultFontSize,
         onMaxFontSizeChange = settingsViewModel::updateMaxFontSize,
         onForceBrightnessChange = settingsViewModel::updateForceBrightness,
@@ -158,19 +161,19 @@ fun SettingsScreen(
     )
 
     Scaffold { paddingValues ->
-        Column( // <--- THIS IS NOW A REGULAR COLUMN
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState()) // <--- Added for scrolling
+                .verticalScroll(rememberScrollState())
                 .padding(paddingValues)
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Header/Tagline Section (no 'item {}' wrapper)
             Column(
                 modifier = Modifier.padding(top = 60.dp),
-                horizontalAlignment = Alignment.CenterHorizontally) {
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
                 Text(
                     buildAnnotatedString {
                         withStyle(
@@ -195,7 +198,6 @@ fun SettingsScreen(
                 )
             }
 
-            // Lowkey Settings Card (no 'item {}' wrapper)
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 elevation = CardDefaults.cardElevation(4.dp),
@@ -207,7 +209,6 @@ fun SettingsScreen(
                     Text("lowkey", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.primary)
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Default Font Size Slider
                     Text("default volume: ${uiState.defaultFontSize.roundToInt()}", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.primary)
                     Row(
                         modifier = Modifier
@@ -226,7 +227,6 @@ fun SettingsScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Max Font Size Slider
                     Text("max volume: ${uiState.maxFontSize.roundToInt()}", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.primary)
                     Row(
                         modifier = Modifier
@@ -245,7 +245,6 @@ fun SettingsScreen(
                 }
             }
 
-            // Blast Settings Card (no 'item {}' wrapper)
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 elevation = CardDefaults.cardElevation(4.dp),
@@ -257,7 +256,6 @@ fun SettingsScreen(
                     Text("BLAST", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.secondary)
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Force Max Brightness Toggle
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
@@ -276,7 +274,6 @@ fun SettingsScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Force Landscape Toggle
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
@@ -295,7 +292,6 @@ fun SettingsScreen(
                 }
             }
 
-            // Clapback Button Settings Card (no 'item {}' wrapper)
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 elevation = CardDefaults.cardElevation(4.dp),
@@ -335,7 +331,7 @@ fun SettingsScreen(
                         title = "spark 4",
                         labelValue = uiState.clapback4Label,
                         onLabelChange = onClapback4LabelChange,
-                        hiddenValue = uiState.clapback4Hidden, // Corrected typo here, if not already
+                        hiddenValue = uiState.clapback4Hidden,
                         onHiddenChange = onClapback4HiddenChange,
                         colors = clapbackTextFieldColors
                     )
@@ -350,20 +346,7 @@ fun SettingsScreen(
 fun SettingsScreenPreview() {
     ShoutlessTheme {
         SettingsScreen(
-            uiState = SettingsUiState(
-                defaultFontSize = 30f,
-                maxFontSize = 120f,
-                forceBrightness = true,
-                forceLandscape = false,
-                clapback1Label = "yeah",
-                clapback1Hidden = "yeah",
-                clapback2Label = "nah",
-                clapback2Hidden = "nah",
-                clapback3Label = "ty",
-                clapback3Hidden = "thank you",
-                clapback4Label = "brb",
-                clapback4Hidden = "be right back",
-            ),
+            uiState = SettingsUiState(),
             tagline = "do it different",
             onDefaultFontSizeChange = {},
             onMaxFontSizeChange = {},

@@ -1,6 +1,8 @@
 package com.example.shoutless
 
-import android.content.Context
+import android.app.Application
+import android.content.SharedPreferences
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -10,6 +12,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
+import kotlin.random.Random
 
 // Represents the entire UI state for the Settings screen
 data class SettingsUiState(
@@ -17,22 +20,31 @@ data class SettingsUiState(
     val maxFontSize: Float = 150f,
     val forceBrightness: Boolean = false,
     val forceLandscape: Boolean = false,
+    // Clapback labels
     val clapback1Label: String = "yeah",
-    val clapback1Hidden: String = "yeah",
     val clapback2Label: String = "nah",
-    val clapback2Hidden: String = "nah",
     val clapback3Label: String = "ty",
-    val clapback3Hidden: String = "thank you",
     val clapback4Label: String = "brb",
+    // Clapback hidden messages
+    val clapback1Hidden: String = "yeah",
+    val clapback2Hidden: String = "nah",
+    val clapback3Hidden: String = "thank you",
     val clapback4Hidden: String = "be right back",
 )
 
-class SettingsViewModel(private val context: Context) : ViewModel() {
-
-    private val sharedPreferences = context.getSharedPreferences(SettingsActivity.PREFS_NAME, Context.MODE_PRIVATE)
+class SettingsViewModel(
+    private val application: Application,
+    private val sharedPreferences: SharedPreferences
+) : AndroidViewModel(application) {
 
     private val _uiState = MutableStateFlow(loadSettingsFromPrefs())
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
+    private val _randomTagline = MutableStateFlow("")
+    val randomTagline: StateFlow<String> = _randomTagline.asStateFlow()
+
+    init {
+        loadRandomTagline()
+    }
 
     private fun loadSettingsFromPrefs(): SettingsUiState {
         return SettingsUiState(
@@ -49,6 +61,15 @@ class SettingsViewModel(private val context: Context) : ViewModel() {
             clapback4Label = sharedPreferences.getString(SettingsActivity.KEY_CLAPBACK4_LABEL, "brb") ?: "brb",
             clapback4Hidden = sharedPreferences.getString(SettingsActivity.KEY_CLAPBACK4_HIDDEN, "be right back") ?: "be right back",
         )
+    }
+
+    private fun loadRandomTagline() {
+        val taglinesArray = application.resources.getStringArray(R.array.settings_taglines)
+        if (taglinesArray.isNotEmpty()) {
+            _randomTagline.value = taglinesArray[Random.nextInt(taglinesArray.size)]
+        } else {
+            _randomTagline.value = ""
+        }
     }
 
     fun updateDefaultFontSize(newSize: Float) {
@@ -144,12 +165,11 @@ class SettingsViewModel(private val context: Context) : ViewModel() {
         }
     }
 
-    // Factory for SettingsViewModel
-    class Factory(private val context: Context) : ViewModelProvider.Factory {
+    class Factory(private val application: Application, private val prefs: SharedPreferences) : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             if (modelClass.isAssignableFrom(SettingsViewModel::class.java)) {
                 @Suppress("UNCHECKED_CAST")
-                return SettingsViewModel(context) as T
+                return SettingsViewModel(application, prefs) as T
             }
             throw IllegalArgumentException("Unknown ViewModel class")
         }

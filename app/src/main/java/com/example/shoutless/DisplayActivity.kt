@@ -189,7 +189,7 @@ fun DisplayScreen(
         Modifier.pointerInput(Unit) {
             detectTransformGestures { _, _, zoom, _ ->
                 val newSizeValue = dynamicFontSize.value * zoom
-                val maxAllowedSize = min(maxFontSize.toFloat(), maxFitFontSize.value)
+                val maxAllowedSize = maxFitFontSize.value
                 dynamicFontSize = newSizeValue.coerceIn(10f, maxAllowedSize).sp
             }
         }

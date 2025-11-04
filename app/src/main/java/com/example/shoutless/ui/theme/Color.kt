@@ -24,15 +24,5 @@ val on_tertiary = Color.White
 val on_background = Color(0xFFE6E1E5)
 val on_surface = Color(0xFFE6E1E5)
 
-// Light Theme Colors
-val sl_primary_light = Color(0xFFEADDFF)
-val sl_secondary_light = Color(0xFFE8DEF8)
-val sl_tertiary_light = Color(0xFFF0DBEB)
-val sl_background_light = Color(0xFFFDF7FF)
-val sl_surface_light = Color(0xFFFDF7FF)
-val on_background_light = Color(0xFF1B1B1F)
-val on_surface_light = Color(0xFF1B1B1F)
-
 // Surface Variants
 val on_surface_variant_dark = Color(0xFF4D4D4D)
-val on_surface_variant_light = Color(0xFF4D4D4D)

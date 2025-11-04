@@ -141,7 +141,9 @@ fun DisplayScreen(
         lineBreak = LineBreak.Simple,
         hyphens = Hyphens.None
     )
-
+    
+    // SUGGESTION: Consider abstracting the font size calculation logic into a separate,
+    // testable function. This would improve readability and maintainability.
     val maxFitFontSize = remember(text, screenWidthPx, screenHeightPx) {
         if (text.isBlank()) {
             maxFontSize.sp
@@ -158,6 +160,7 @@ fun DisplayScreen(
         }
     }
 
+    // SUGGESTION: Similar to the max font size, this could be moved to a separate function.
     val initialFontSize = remember(text, screenWidthPx, screenHeightPx, mode, defaultFontSize) {
         if (text.isBlank()) {
             30.sp
@@ -197,7 +200,10 @@ fun DisplayScreen(
     val scope = rememberCoroutineScope()
     var tapCount by remember { mutableStateOf(0) }
     var tapJob: Job? by remember { mutableStateOf(null) }
-
+    
+    // SUGGESTION: The triple-tap gesture to navigate to ClapbackActivity could be
+    // made more discoverable to the user, perhaps with a subtle visual cue or
+    // a mention in a "first launch" overlay.
     Scaffold {
         Box(
             modifier = Modifier
@@ -235,6 +241,10 @@ fun DisplayScreen(
     }
 }
 
+// SUGGESTION: This function is doing a lot of heavy lifting. It could be
+// further optimized, for example, by using a binary search approach to find
+// the optimal font size, which would be more efficient than the current
+// iterative approach.
 fun isTextOverflowing(
     text: String,
     style: TextStyle,

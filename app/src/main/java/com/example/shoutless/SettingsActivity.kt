@@ -1,6 +1,7 @@
 package com.example.shoutless
 
 import android.content.Context
+import android.content.pm.ActivityInfo
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -25,26 +26,46 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.text.font.FontWeight
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.core.content.edit
 import com.example.shoutless.ui.theme.ShoutlessTheme
 import com.example.shoutless.util.HideSystemBars
 import kotlin.math.roundToInt
 
 class SettingsActivity : ComponentActivity() {
+    companion object {
+        const val PREFS_NAME = "shoutless_prefs"
+        const val KEY_DEFAULT_FONT_SIZE = "lowkey_default_font_size"
+        const val KEY_MAX_FONT_SIZE = "lowkey_max_font_size"
+        const val KEY_FORCE_BRIGHTNESS = "blast_force_brightness"
+        const val KEY_FORCE_LANDSCAPE = "blast_force_landscape"
+        const val KEY_CLAPBACK1_LABEL = "clapback1_label"
+        const val KEY_CLAPBACK1_HIDDEN = "clapback1_hidden"
+        const val KEY_CLAPBACK2_LABEL = "clapback2_label"
+        const val KEY_CLAPBACK2_HIDDEN = "clapback2_hidden"
+        const val KEY_CLAPBACK3_LABEL = "clapback3_label"
+        const val KEY_CLAPBACK3_HIDDEN = "clapback3_hidden"
+        const val KEY_CLAPBACK4_LABEL = "clapback4_label"
+        const val KEY_CLAPBACK4_HIDDEN = "clapback4_hidden"
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         setContent {
             ShoutlessTheme {
                 Surface(
@@ -59,111 +80,48 @@ class SettingsActivity : ComponentActivity() {
 }
 
 @Composable
-fun SettingsRoute() {
-    val context = LocalContext.current
-    val sharedPreferences = remember { context.getSharedPreferences("shoutless_prefs", Context.MODE_PRIVATE) }
-
-    var defaultFontSize by remember { mutableStateOf(sharedPreferences.getInt("lowkey_default_font_size", 30).toFloat()) }
-    var maxFontSize by remember { mutableStateOf(sharedPreferences.getInt("lowkey_max_font_size", 150).toFloat()) }
-    var forceBrightness by remember { mutableStateOf(sharedPreferences.getBoolean("blast_force_brightness", false)) }
-    var forceLandscape by remember { mutableStateOf(sharedPreferences.getBoolean("blast_force_landscape", false)) }
-
-    var clapback1Label by remember { mutableStateOf(sharedPreferences.getString("clapback1_label", "yeah") ?: "yeah") }
-    var clapback1Hidden by remember { mutableStateOf(sharedPreferences.getString("clapback1_hidden", "yeah") ?: "yeah") }
-    var clapback2Label by remember { mutableStateOf(sharedPreferences.getString("clapback2_label", "nah") ?: "nah") }
-    var clapback2Hidden by remember { mutableStateOf(sharedPreferences.getString("clapback2_hidden", "nah") ?: "nah") }
-    var clapback3Label by remember { mutableStateOf(sharedPreferences.getString("clapback3_label", "ty") ?: "ty") }
-    var clapback3Hidden by remember { mutableStateOf(sharedPreferences.getString("clapback3_hidden", "thank you") ?: "thank you") }
-    var clapback4Label by remember { mutableStateOf(sharedPreferences.getString("clapback4_label", "brb") ?: "brb") }
-    var clapback4Hidden by remember { mutableStateOf(sharedPreferences.getString("clapback4_hidden", "be right back") ?: "be right back") }
+fun SettingsRoute(settingsViewModel: SettingsViewModel = viewModel(factory = SettingsViewModel.Factory(LocalContext.current))) {
+    val uiState by settingsViewModel.uiState.collectAsState()
 
     HideSystemBars()
 
     SettingsScreen(
-        defaultFontSize = defaultFontSize,
-        maxFontSize = maxFontSize,
-        forceBrightness = forceBrightness,
-        forceLandscape = forceLandscape,
-        clapback1Label = clapback1Label,
-        clapback1Hidden = clapback1Hidden,
-        clapback2Label = clapback2Label,
-        clapback2Hidden = clapback2Hidden,
-        clapback3Label = clapback3Label,
-        clapback3Hidden = clapback3Hidden,
-        clapback4Label = clapback4Label,
-        clapback4Hidden = clapback4Hidden,
-        onDefaultFontSizeChange = {
-            val snappedValue = ((it / 5).roundToInt() * 5f).coerceIn(10f, 50f)
-            defaultFontSize = snappedValue
-            sharedPreferences.edit { putInt("lowkey_default_font_size", snappedValue.roundToInt()) }
-            if (snappedValue > maxFontSize) {
-                maxFontSize = snappedValue
-                sharedPreferences.edit { putInt("lowkey_max_font_size", snappedValue.roundToInt()) }
-            }
-        },
-        onMaxFontSizeChange = {
-            val snappedValue = ((it / 5).roundToInt() * 5f).coerceIn(defaultFontSize, 150f)
-            maxFontSize = snappedValue
-            sharedPreferences.edit { putInt("lowkey_max_font_size", snappedValue.roundToInt()) }
-        },
-        onForceBrightnessChange = {
-            forceBrightness = it
-            sharedPreferences.edit { putBoolean("blast_force_brightness", it) }
-        },
-        onForceLandscapeChange = {
-            forceLandscape = it
-            sharedPreferences.edit { putBoolean("blast_force_landscape", it) }
-        },
-        onClapback1LabelChange = {
-            clapback1Label = it
-            sharedPreferences.edit { putString("clapback1_label", it) }
-        },
-        onClapback1HiddenChange = {
-            clapback1Hidden = it
-            sharedPreferences.edit { putString("clapback1_hidden", it) }
-        },
-        onClapback2LabelChange = {
-            clapback2Label = it
-            sharedPreferences.edit { putString("clapback2_label", it) }
-        },
-        onClapback2HiddenChange = {
-            clapback2Hidden = it
-            sharedPreferences.edit { putString("clapback2_hidden", it) }
-        },
-        onClapback3LabelChange = {
-            clapback3Label = it
-            sharedPreferences.edit { putString("clapback3_label", it) }
-        },
-        onClapback3HiddenChange = {
-            clapback3Hidden = it
-            sharedPreferences.edit { putString("clapback3_hidden", it) }
-        },
-        onClapback4LabelChange = {
-            clapback4Label = it
-            sharedPreferences.edit { putString("clapback4_label", it) }
-        },
-        onClapback4HiddenChange = {
-            clapback4Hidden = it
-            sharedPreferences.edit { putString("clapback4_hidden", it) }
-        }
+        uiState = uiState,
+        onDefaultFontSizeChange = settingsViewModel::updateDefaultFontSize,
+        onMaxFontSizeChange = settingsViewModel::updateMaxFontSize,
+        onForceBrightnessChange = settingsViewModel::updateForceBrightness,
+        onForceLandscapeChange = settingsViewModel::updateForceLandscape,
+        onClapback1LabelChange = settingsViewModel::updateClapback1Label,
+        onClapback1HiddenChange = settingsViewModel::updateClapback1Hidden,
+        onClapback2LabelChange = settingsViewModel::updateClapback2Label,
+        onClapback2HiddenChange = settingsViewModel::updateClapback2Hidden,
+        onClapback3LabelChange = settingsViewModel::updateClapback3Label,
+        onClapback3HiddenChange = settingsViewModel::updateClapback3Hidden,
+        onClapback4LabelChange = settingsViewModel::updateClapback4Label,
+        onClapback4HiddenChange = settingsViewModel::updateClapback4Hidden,
     )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+fun ClapbackSettings(
+    title: String,
+    labelValue: String,
+    onLabelChange: (String) -> Unit,
+    hiddenValue: String,
+    onHiddenChange: (String) -> Unit,
+    colors: TextFieldColors
+) {
+    Text(title, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.tertiary)
+    OutlinedTextField(value = labelValue, onValueChange = onLabelChange, label = { Text("label") }, modifier = Modifier.fillMaxWidth(), colors = colors)
+    OutlinedTextField(value = hiddenValue, onValueChange = onHiddenChange, label = { Text("msg txt") }, modifier = Modifier.fillMaxWidth(), colors = colors)
+    Spacer(modifier = Modifier.height(16.dp))
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
 fun SettingsScreen(
-    defaultFontSize: Float,
-    maxFontSize: Float,
-    forceBrightness: Boolean,
-    forceLandscape: Boolean,
-    clapback1Label: String,
-    clapback1Hidden: String,
-    clapback2Label: String,
-    clapback2Hidden: String,
-    clapback3Label: String,
-    clapback3Hidden: String,
-    clapback4Label: String,
-    clapback4Hidden: String,
+    uiState: SettingsUiState,
     onDefaultFontSizeChange: (Float) -> Unit,
     onMaxFontSizeChange: (Float) -> Unit,
     onForceBrightnessChange: (Boolean) -> Unit,
@@ -182,9 +140,9 @@ fun SettingsScreen(
         focusedLabelColor = tertiaryColor,
         cursorColor = tertiaryColor,
         selectionColors = TextSelectionColors(handleColor = tertiaryColor, backgroundColor = tertiaryColor.copy(alpha = 0.4f)),
-        unfocusedIndicatorColor = tertiaryColor, 
-        focusedIndicatorColor = tertiaryColor, 
-        focusedContainerColor = MaterialTheme.colorScheme.surface, 
+        unfocusedIndicatorColor = tertiaryColor,
+        focusedIndicatorColor = tertiaryColor,
+        focusedContainerColor = MaterialTheme.colorScheme.surface,
         unfocusedContainerColor = MaterialTheme.colorScheme.surface
     )
 
@@ -212,7 +170,7 @@ fun SettingsScreen(
                         Spacer(modifier = Modifier.height(16.dp))
 
                         // Default Font Size Slider
-                        Text("default volume: ${defaultFontSize.roundToInt()}", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.primary)
+                        Text("default volume: ${uiState.defaultFontSize.roundToInt()}", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.primary)
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -220,7 +178,7 @@ fun SettingsScreen(
                         ) {
                             Text("10", style = MaterialTheme.typography.labelSmall)
                             Slider(
-                                value = defaultFontSize,
+                                value = uiState.defaultFontSize,
                                 onValueChange = onDefaultFontSizeChange,
                                 valueRange = 10f..50f,
                                 modifier = Modifier.weight(1f)
@@ -231,17 +189,17 @@ fun SettingsScreen(
                         Spacer(modifier = Modifier.height(16.dp))
 
                         // Max Font Size Slider
-                        Text("max volume: ${maxFontSize.roundToInt()}", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.primary)
+                        Text("max volume: ${uiState.maxFontSize.roundToInt()}", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.primary)
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(defaultFontSize.roundToInt().toString(), style = MaterialTheme.typography.labelSmall)
+                            Text(uiState.defaultFontSize.roundToInt().toString(), style = MaterialTheme.typography.labelSmall)
                             Slider(
-                                value = maxFontSize,
+                                value = uiState.maxFontSize,
                                 onValueChange = onMaxFontSizeChange,
-                                valueRange = defaultFontSize..150f,
+                                valueRange = uiState.defaultFontSize..150f,
                                 modifier = Modifier.weight(1f)
                             )
                             Text("150", style = MaterialTheme.typography.labelSmall)
@@ -270,7 +228,7 @@ fun SettingsScreen(
                         ) {
                             Text("force max brightness", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.secondary)
                             Switch(
-                                checked = forceBrightness,
+                                checked = uiState.forceBrightness,
                                 onCheckedChange = onForceBrightnessChange,
                                 colors = SwitchDefaults.colors(
                                     checkedThumbColor = MaterialTheme.colorScheme.secondary,
@@ -289,7 +247,7 @@ fun SettingsScreen(
                         ) {
                             Text("force landscape", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.secondary)
                             Switch(
-                                checked = forceLandscape,
+                                checked = uiState.forceLandscape,
                                 onCheckedChange = onForceLandscapeChange,
                                 colors = SwitchDefaults.colors(
                                     checkedThumbColor = MaterialTheme.colorScheme.secondary,
@@ -313,28 +271,38 @@ fun SettingsScreen(
                         Text("clapback", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.tertiary)
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        // Button 1
-                        Text("spark 1", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.tertiary)
-                        OutlinedTextField(value = clapback1Label, onValueChange = onClapback1LabelChange, label = { Text("label") }, modifier = Modifier.fillMaxWidth(), colors = clapbackTextFieldColors)
-                        OutlinedTextField(value = clapback1Hidden, onValueChange = onClapback1HiddenChange, label = { Text("msg txt") }, modifier = Modifier.fillMaxWidth(), colors = clapbackTextFieldColors)
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        // Button 2
-                        Text("spark 2", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.tertiary)
-                        OutlinedTextField(value = clapback2Label, onValueChange = onClapback2LabelChange, label = { Text("label") }, modifier = Modifier.fillMaxWidth(), colors = clapbackTextFieldColors)
-                        OutlinedTextField(value = clapback2Hidden, onValueChange = onClapback2HiddenChange, label = { Text("msg txt") }, modifier = Modifier.fillMaxWidth(), colors = clapbackTextFieldColors)
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        // Button 3
-                        Text("spark 3", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.tertiary)
-                        OutlinedTextField(value = clapback3Label, onValueChange = onClapback3LabelChange, label = { Text("label") }, modifier = Modifier.fillMaxWidth(), colors = clapbackTextFieldColors)
-                        OutlinedTextField(value = clapback3Hidden, onValueChange = onClapback3HiddenChange, label = { Text("msg txt") }, modifier = Modifier.fillMaxWidth(), colors = clapbackTextFieldColors)
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        // Button 4
-                        Text("spark 4", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.tertiary)
-                        OutlinedTextField(value = clapback4Label, onValueChange = onClapback4LabelChange, label = { Text("label") }, modifier = Modifier.fillMaxWidth(), colors = clapbackTextFieldColors)
-                        OutlinedTextField(value = clapback4Hidden, onValueChange = onClapback4HiddenChange, label = { Text("msg txt") }, modifier = Modifier.fillMaxWidth(), colors = clapbackTextFieldColors)
+                        ClapbackSettings(
+                            title = "spark 1",
+                            labelValue = uiState.clapback1Label,
+                            onLabelChange = onClapback1LabelChange,
+                            hiddenValue = uiState.clapback1Hidden,
+                            onHiddenChange = onClapback1HiddenChange,
+                            colors = clapbackTextFieldColors
+                        )
+                        ClapbackSettings(
+                            title = "spark 2",
+                            labelValue = uiState.clapback2Label,
+                            onLabelChange = onClapback2LabelChange,
+                            hiddenValue = uiState.clapback2Hidden,
+                            onHiddenChange = onClapback2HiddenChange,
+                            colors = clapbackTextFieldColors
+                        )
+                        ClapbackSettings(
+                            title = "spark 3",
+                            labelValue = uiState.clapback3Label,
+                            onLabelChange = onClapback3LabelChange,
+                            hiddenValue = uiState.clapback3Hidden,
+                            onHiddenChange = onClapback3HiddenChange,
+                            colors = clapbackTextFieldColors
+                        )
+                        ClapbackSettings(
+                            title = "spark 4",
+                            labelValue = uiState.clapback4Label,
+                            onLabelChange = onClapback4LabelChange,
+                            hiddenValue = uiState.clapback4Hidden,
+                            onHiddenChange = onClapback4HiddenChange,
+                            colors = clapbackTextFieldColors
+                        )
                     }
                 }
             }
@@ -347,18 +315,20 @@ fun SettingsScreen(
 fun SettingsScreenPreview() {
     ShoutlessTheme {
         SettingsScreen(
-            defaultFontSize = 30f,
-            maxFontSize = 120f,
-            forceBrightness = true,
-            forceLandscape = false,
-            clapback1Label = "yeah",
-            clapback1Hidden = "yeah",
-            clapback2Label = "nah",
-            clapback2Hidden = "nah",
-            clapback3Label = "ty",
-            clapback3Hidden = "thank you",
-            clapback4Label = "brb",
-            clapback4Hidden = "be right back",
+            uiState = SettingsUiState(
+                defaultFontSize = 30f,
+                maxFontSize = 120f,
+                forceBrightness = true,
+                forceLandscape = false,
+                clapback1Label = "yeah",
+                clapback1Hidden = "yeah",
+                clapback2Label = "nah",
+                clapback2Hidden = "nah",
+                clapback3Label = "ty",
+                clapback3Hidden = "thank you",
+                clapback4Label = "brb",
+                clapback4Hidden = "be right back",
+            ),
             onDefaultFontSizeChange = {},
             onMaxFontSizeChange = {},
             onForceBrightnessChange = {},

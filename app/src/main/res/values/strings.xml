@@ -64,4 +64,8 @@
         <item>already hitting send</item>
         <item>no notes</item>
     </string-array>
+    <string-array name="settings_taglines">
+        <item>change stuff</item>
+        <item>do it different</item>
+    </string-array>
 </resources>

@@ -12,8 +12,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -30,21 +33,24 @@ import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.core.content.edit
 import com.example.shoutless.ui.theme.ShoutlessTheme
 import com.example.shoutless.util.HideSystemBars
 import kotlin.math.roundToInt
+import kotlin.random.Random
 
 class SettingsActivity : ComponentActivity() {
     companion object {
@@ -82,11 +88,15 @@ class SettingsActivity : ComponentActivity() {
 @Composable
 fun SettingsRoute(settingsViewModel: SettingsViewModel = viewModel(factory = SettingsViewModel.Factory(LocalContext.current))) {
     val uiState by settingsViewModel.uiState.collectAsState()
+    val context = LocalContext.current
+    val taglines = remember { context.resources.getStringArray(R.array.settings_taglines) }
+    val randomTagline = remember { taglines[Random.nextInt(taglines.size)] }
 
     HideSystemBars()
 
     SettingsScreen(
         uiState = uiState,
+        tagline = randomTagline,
         onDefaultFontSizeChange = settingsViewModel::updateDefaultFontSize,
         onMaxFontSizeChange = settingsViewModel::updateMaxFontSize,
         onForceBrightnessChange = settingsViewModel::updateForceBrightness,
@@ -122,6 +132,7 @@ fun ClapbackSettings(
 @Composable
 fun SettingsScreen(
     uiState: SettingsUiState,
+    tagline: String,
     onDefaultFontSizeChange: (Float) -> Unit,
     onMaxFontSizeChange: (Float) -> Unit,
     onForceBrightnessChange: (Boolean) -> Unit,
@@ -146,164 +157,188 @@ fun SettingsScreen(
         unfocusedContainerColor = MaterialTheme.colorScheme.surface
     )
 
-    Scaffold {
-        paddingValues ->
-        LazyColumn(
+    Scaffold { paddingValues ->
+        Column( // <--- THIS IS NOW A REGULAR COLUMN
             modifier = Modifier
                 .fillMaxSize()
+                .verticalScroll(rememberScrollState()) // <--- Added for scrolling
                 .padding(paddingValues)
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            item {
-                // Lowkey Settings
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    elevation = CardDefaults.cardElevation(4.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surface
+            // Header/Tagline Section (no 'item {}' wrapper)
+            Column(
+                modifier = Modifier.padding(top = 60.dp),
+                horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    buildAnnotatedString {
+                        withStyle(
+                            style = SpanStyle(
+                                color = MaterialTheme.colorScheme.tertiary,
+                                shadow = Shadow(color = MaterialTheme.colorScheme.tertiary, blurRadius = 20f)
+                            )
+                        ) {
+                            append("settings")
+                        }
+                    },
+                    style = MaterialTheme.typography.displayLarge,
+                )
+
+                Text(
+                    text = tagline,
+                    modifier = Modifier.offset(y = (-8).dp),
+                    style = MaterialTheme.typography.bodyLarge.copy(
+                        fontStyle = FontStyle.Italic,
+                        shadow = Shadow(color = MaterialTheme.colorScheme.onBackground, blurRadius = 10f)
                     )
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text("lowkey", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.primary)
-                        Spacer(modifier = Modifier.height(16.dp))
+                )
+            }
 
-                        // Default Font Size Slider
-                        Text("default volume: ${uiState.defaultFontSize.roundToInt()}", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.primary)
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text("10", style = MaterialTheme.typography.labelSmall)
-                            Slider(
-                                value = uiState.defaultFontSize,
-                                onValueChange = onDefaultFontSizeChange,
-                                valueRange = 10f..50f,
-                                modifier = Modifier.weight(1f)
-                            )
-                            Text("50", style = MaterialTheme.typography.labelSmall)
-                        }
+            // Lowkey Settings Card (no 'item {}' wrapper)
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                elevation = CardDefaults.cardElevation(4.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                )
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text("lowkey", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.primary)
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                        Spacer(modifier = Modifier.height(16.dp))
+                    // Default Font Size Slider
+                    Text("default volume: ${uiState.defaultFontSize.roundToInt()}", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.primary)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("10", style = MaterialTheme.typography.labelSmall)
+                        Slider(
+                            value = uiState.defaultFontSize,
+                            onValueChange = onDefaultFontSizeChange,
+                            valueRange = 10f..50f,
+                            modifier = Modifier.weight(1f)
+                        )
+                        Text("50", style = MaterialTheme.typography.labelSmall)
+                    }
 
-                        // Max Font Size Slider
-                        Text("max volume: ${uiState.maxFontSize.roundToInt()}", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.primary)
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(uiState.defaultFontSize.roundToInt().toString(), style = MaterialTheme.typography.labelSmall)
-                            Slider(
-                                value = uiState.maxFontSize,
-                                onValueChange = onMaxFontSizeChange,
-                                valueRange = uiState.defaultFontSize..150f,
-                                modifier = Modifier.weight(1f)
-                            )
-                            Text("150", style = MaterialTheme.typography.labelSmall)
-                        }
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Max Font Size Slider
+                    Text("max volume: ${uiState.maxFontSize.roundToInt()}", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.primary)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(uiState.defaultFontSize.roundToInt().toString(), style = MaterialTheme.typography.labelSmall)
+                        Slider(
+                            value = uiState.maxFontSize,
+                            onValueChange = onMaxFontSizeChange,
+                            valueRange = uiState.defaultFontSize..150f,
+                            modifier = Modifier.weight(1f)
+                        )
+                        Text("150", style = MaterialTheme.typography.labelSmall)
                     }
                 }
             }
-            item {
-                // Blast Settings
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    elevation = CardDefaults.cardElevation(4.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    )
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text("BLAST", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.secondary)
-                        Spacer(modifier = Modifier.height(16.dp))
 
-                        // Force Max Brightness Toggle
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text("force max brightness", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.secondary)
-                            Switch(
-                                checked = uiState.forceBrightness,
-                                onCheckedChange = onForceBrightnessChange,
-                                colors = SwitchDefaults.colors(
-                                    checkedThumbColor = MaterialTheme.colorScheme.secondary,
-                                    checkedTrackColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f)
-                                )
+            // Blast Settings Card (no 'item {}' wrapper)
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                elevation = CardDefaults.cardElevation(4.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                )
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text("BLAST", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.secondary)
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Force Max Brightness Toggle
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text("force max brightness", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.secondary)
+                        Switch(
+                            checked = uiState.forceBrightness,
+                            onCheckedChange = onForceBrightnessChange,
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = MaterialTheme.colorScheme.secondary,
+                                checkedTrackColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f)
                             )
-                        }
+                        )
+                    }
 
-                        Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                        // Force Landscape Toggle
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text("force landscape", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.secondary)
-                            Switch(
-                                checked = uiState.forceLandscape,
-                                onCheckedChange = onForceLandscapeChange,
-                                colors = SwitchDefaults.colors(
-                                    checkedThumbColor = MaterialTheme.colorScheme.secondary,
-                                    checkedTrackColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f)
-                                )
+                    // Force Landscape Toggle
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text("force landscape", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.secondary)
+                        Switch(
+                            checked = uiState.forceLandscape,
+                            onCheckedChange = onForceLandscapeChange,
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = MaterialTheme.colorScheme.secondary,
+                                checkedTrackColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f)
                             )
-                        }
+                        )
                     }
                 }
             }
-            item {
-                // Clapback Button Settings
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    elevation = CardDefaults.cardElevation(4.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    )
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text("clapback", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.tertiary)
-                        Spacer(modifier = Modifier.height(16.dp))
 
-                        ClapbackSettings(
-                            title = "spark 1",
-                            labelValue = uiState.clapback1Label,
-                            onLabelChange = onClapback1LabelChange,
-                            hiddenValue = uiState.clapback1Hidden,
-                            onHiddenChange = onClapback1HiddenChange,
-                            colors = clapbackTextFieldColors
-                        )
-                        ClapbackSettings(
-                            title = "spark 2",
-                            labelValue = uiState.clapback2Label,
-                            onLabelChange = onClapback2LabelChange,
-                            hiddenValue = uiState.clapback2Hidden,
-                            onHiddenChange = onClapback2HiddenChange,
-                            colors = clapbackTextFieldColors
-                        )
-                        ClapbackSettings(
-                            title = "spark 3",
-                            labelValue = uiState.clapback3Label,
-                            onLabelChange = onClapback3LabelChange,
-                            hiddenValue = uiState.clapback3Hidden,
-                            onHiddenChange = onClapback3HiddenChange,
-                            colors = clapbackTextFieldColors
-                        )
-                        ClapbackSettings(
-                            title = "spark 4",
-                            labelValue = uiState.clapback4Label,
-                            onLabelChange = onClapback4LabelChange,
-                            hiddenValue = uiState.clapback4Hidden,
-                            onHiddenChange = onClapback4HiddenChange,
-                            colors = clapbackTextFieldColors
-                        )
-                    }
+            // Clapback Button Settings Card (no 'item {}' wrapper)
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                elevation = CardDefaults.cardElevation(4.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                )
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text("clapback", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.tertiary)
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    ClapbackSettings(
+                        title = "spark 1",
+                        labelValue = uiState.clapback1Label,
+                        onLabelChange = onClapback1LabelChange,
+                        hiddenValue = uiState.clapback1Hidden,
+                        onHiddenChange = onClapback1HiddenChange,
+                        colors = clapbackTextFieldColors
+                    )
+                    ClapbackSettings(
+                        title = "spark 2",
+                        labelValue = uiState.clapback2Label,
+                        onLabelChange = onClapback2LabelChange,
+                        hiddenValue = uiState.clapback2Hidden,
+                        onHiddenChange = onClapback2HiddenChange,
+                        colors = clapbackTextFieldColors
+                    )
+                    ClapbackSettings(
+                        title = "spark 3",
+                        labelValue = uiState.clapback3Label,
+                        onLabelChange = onClapback3LabelChange,
+                        hiddenValue = uiState.clapback3Hidden,
+                        onHiddenChange = onClapback3HiddenChange,
+                        colors = clapbackTextFieldColors
+                    )
+                    ClapbackSettings(
+                        title = "spark 4",
+                        labelValue = uiState.clapback4Label,
+                        onLabelChange = onClapback4LabelChange,
+                        hiddenValue = uiState.clapback4Hidden, // Corrected typo here, if not already
+                        onHiddenChange = onClapback4HiddenChange,
+                        colors = clapbackTextFieldColors
+                    )
                 }
             }
         }
@@ -329,6 +364,7 @@ fun SettingsScreenPreview() {
                 clapback4Label = "brb",
                 clapback4Hidden = "be right back",
             ),
+            tagline = "do it different",
             onDefaultFontSizeChange = {},
             onMaxFontSizeChange = {},
             onForceBrightnessChange = {},

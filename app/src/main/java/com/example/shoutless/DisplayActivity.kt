@@ -13,7 +13,6 @@ import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width // for scaling fix
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -28,9 +27,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalFontFamilyResolver
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.rememberTextMeasurer
@@ -189,12 +188,7 @@ fun DisplayScreen(
     onTripleTap: () -> Unit
 ) {
     HideSystemBars()
-    val configuration = LocalConfiguration.current
-    val density = LocalDensity.current
     val padding = 16.dp
-
-    val screenWidthPx = with(density) { (configuration.screenWidthDp.dp - (padding * 2)).toPx() }
-    val screenHeightPx = with(density) { (configuration.screenHeightDp.dp - (padding * 2)).toPx() }
 
     val textStyle = LocalTextStyle.current.copy(
         textAlign = TextAlign.Center,
@@ -211,81 +205,90 @@ fun DisplayScreen(
         hyphens = Hyphens.None
     )
 
-    // 1. Calculate the ABSOLUTE maximum font size that can fit the screen.
-    val maxFitFontSizeValue = rememberFitTextSize(
-        text = text,
-        textStyle = textStyle,
-        maxInitialFontSize = 300f,
-        maxWidth = screenWidthPx,
-        maxHeight = screenHeightPx
-    )
-
-    // 2. Determine the initial font size based on the mode.
-    val initialFontSizeValue = remember(mode, text, maxFitFontSizeValue, defaultFontSize, maxFontSize) {
-        if (mode == "Blast") {
-            maxFitFontSizeValue
-        } else { // Lowkey mode
-            val userLimitedMax = min(maxFitFontSizeValue, maxFontSize.toFloat())
-            defaultFontSize.toFloat().coerceAtMost(userLimitedMax)
-        }
-    }
-
-    var dynamicFontSize by remember { mutableStateOf(initialFontSizeValue.sp) }
-
-    LaunchedEffect(initialFontSizeValue) {
-        dynamicFontSize = initialFontSizeValue.sp
-    }
-
-    // 3. Determine the zoom gesture's ceiling by respecting BOTH the screen limit AND the user setting.
-    val maxAllowedZoomSize = min(maxFitFontSizeValue, maxFontSize.toFloat())
-
-    val gestureModifier = if (mode == "Lowkey") {
-        Modifier.pointerInput(Unit) {
-            detectTransformGestures { _, _, zoom, _ ->
-                val newSizeValue = dynamicFontSize.value * zoom
-                // Use the new, correctly calculated ceiling for the zoom.
-                dynamicFontSize = newSizeValue.coerceIn(10f, maxAllowedZoomSize).sp
-            }
-        }
-    } else {
-        Modifier
-    }
-
     val scope = rememberCoroutineScope()
-    var tapCount by remember { mutableStateOf(0) }
+    var tapCount by remember { mutableIntStateOf(0) }
     var tapJob: Job? by remember { mutableStateOf(null) }
 
-    Scaffold {
-        Box(
+    Scaffold { scaffoldPadding ->
+        // This outer box ONLY measures the available space. It has no gestures or background.
+        BoxWithConstraints(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(it)
-                .background(MaterialTheme.colorScheme.background)
-                .pointerInput(Unit) {
-                    detectTapGestures(
-                        onTap = {
-                            tapJob?.cancel()
-                            tapCount++
-                            tapJob = scope.launch {
-                                delay(300L)
-                                when (tapCount) {
-                                    2 -> onDoubleTap()
-                                    3 -> onTripleTap()
-                                }
-                                tapCount = 0
-                            }
-                        }
-                    )
-                }
-                .then(gestureModifier)
-                .padding(padding),
-            contentAlignment = Alignment.Center
+                .padding(scaffoldPadding)
         ) {
-            Text(
+            // All size-dependent calculations and state are now defined inside here,
+            // using the accurate `maxWidth` and `maxHeight` from the constraints.
+            val screenWidthPx = with(LocalDensity.current) { maxWidth.toPx() }
+            val screenHeightPx = with(LocalDensity.current) { maxHeight.toPx() }
+
+            val maxFitFontSizeValue = rememberFitTextSize(
                 text = text,
-                color = MaterialTheme.colorScheme.onBackground,
-                style = textStyle.copy(fontSize = dynamicFontSize)
+                textStyle = textStyle,
+                maxInitialFontSize = 300f,
+                maxWidth = screenWidthPx,
+                maxHeight = screenHeightPx
             )
+
+            val initialFontSizeValue = remember(mode, text, maxFitFontSizeValue, defaultFontSize, maxFontSize) {
+                if (mode == "Blast") {
+                    maxFitFontSizeValue
+                } else { // Lowkey mode
+                    val userLimitedMax = min(maxFitFontSizeValue, maxFontSize.toFloat())
+                    defaultFontSize.toFloat().coerceAtMost(userLimitedMax)
+                }
+            }
+
+            var dynamicFontSize by remember { mutableStateOf(initialFontSizeValue.sp) }
+
+            LaunchedEffect(initialFontSizeValue) {
+                dynamicFontSize = initialFontSizeValue.sp
+            }
+
+            val maxAllowedZoomSize = min(maxFitFontSizeValue, maxFontSize.toFloat())
+
+            val gestureModifier = if (mode == "Lowkey") {
+                Modifier.pointerInput(Unit) {
+                    detectTransformGestures { _, _, zoom, _ ->
+                        val newSizeValue = dynamicFontSize.value * zoom
+                        dynamicFontSize = newSizeValue.coerceIn(10f, maxAllowedZoomSize).sp
+                    }
+                }
+            } else {
+                Modifier
+            }
+
+            // This is your original Box. It now fills the parent BoxWithConstraints
+            // and handles all gestures and drawing.
+            Box(
+                modifier = Modifier
+                    .fillMaxSize() // Fills the BoxWithConstraints
+                    .background(MaterialTheme.colorScheme.background)
+                    .pointerInput(Unit) {
+                        detectTapGestures(
+                            onTap = {
+                                tapJob?.cancel()
+                                tapCount++
+                                tapJob = scope.launch {
+                                    delay(300L)
+                                    when (tapCount) {
+                                        2 -> onDoubleTap()
+                                        3 -> onTripleTap()
+                                    }
+                                    tapCount = 0
+                                }
+                            }
+                        )
+                    }
+                    .then(gestureModifier)
+                    .padding(padding),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = text,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    style = textStyle.copy(fontSize = dynamicFontSize)
+                )
+            }
         }
     }
 }

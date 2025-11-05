@@ -115,9 +115,11 @@ private fun rememberFitTextSize(
 ): Float {
     val textMeasurer = rememberTextMeasurer()
 
-    // Find the *actual* widest word, not just the longest by character count.
-    // This is the key fix. This calculation is expensive, so we use remember to
-    // ensure it only runs when the text or font characteristics change.
+// Find the *actual* widest word, not just the one with the most characters.
+// This is the key fix for ensuring no word ever overflows its line, as a short
+// word like "back" can be wider than a long one like "right".
+// This calculation is expensive, so we use remember to run it only when the
+// text or font characteristics change.
     val widestWord = remember(text, textStyle.fontFamily, textStyle.fontWeight) {
         if (text.isBlank()) {
             ""

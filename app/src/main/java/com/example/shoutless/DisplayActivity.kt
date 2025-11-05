@@ -115,47 +115,50 @@ private fun rememberFitTextSize(
 ): Float {
     val textMeasurer = rememberTextMeasurer()
 
-    // Remember the result, keyed by all inputs that affect the calculation
-    return remember(text, textStyle, minFontSize, maxInitialFontSize, maxWidth, maxHeight) {
+    // Find the *actual* widest word, not just the longest by character count.
+    // This is the key fix. This calculation is expensive, so we use remember to
+    // ensure it only runs when the text or font characteristics change.
+    val widestWord = remember(text, textStyle.fontFamily, textStyle.fontWeight) {
+        if (text.isBlank()) {
+            ""
+        } else {
+            // Measure every word with a dummy style to find the one that is truly the widest.
+            text.split(Regex("\\s+"))
+                .maxByOrNull { word -> textMeasurer.measure(word, textStyle).size.width } ?: ""
+        }
+    }
+
+    return remember(text, textStyle, minFontSize, maxInitialFontSize, maxWidth, maxHeight, widestWord) {
         if (text.isBlank()) {
             return@remember maxInitialFontSize
         }
 
-        // --- THE CORRECTED LOGIC IS HERE ---
-        // We define a local function for clarity and to allow for simple 'return' statements.
-        // This is the cleanest way to avoid lambda return ambiguity.
         fun isOverflowing(fontSize: Float): Boolean {
             val style = textStyle.copy(fontSize = fontSize.sp)
 
-            // First, check if any single word is wider than the container.
-            val anyWordIsTooWide = text.split(Regex("\\s+")).any { word ->
-                if (word.isEmpty()) false
-                else textMeasurer.measure(text = word, style = style).size.width > maxWidth
+            // 1. Check if the *widest* word is too wide. This is now a 100% reliable check.
+            if (widestWord.isNotEmpty()) {
+                val widestWordWidth = textMeasurer.measure(text = widestWord, style = style).size.width
+                if (widestWordWidth > maxWidth) {
+                    return true
+                }
             }
 
-            if (anyWordIsTooWide) {
-                return true // A word is too long, so the font size is invalid.
-            }
-
-            // If words fit, check the whole block.
+            // 2. If the widest word fits, check the whole block for vertical overflow when wrapped.
             val layoutResult = textMeasurer.measure(
                 text = text,
                 style = style,
                 constraints = Constraints(maxWidth = maxWidth.toInt(), maxHeight = maxHeight.toInt())
             )
 
-            // Return the final overflow status
             return layoutResult.hasVisualOverflow || layoutResult.size.height > maxHeight
         }
-        // --- END OF CORRECTED LOGIC ---
 
-
-        // Binary search for the optimal font size (This part remains the same)
+        // Binary search remains the same, using our now-perfect isOverflowing function.
         var low = minFontSize
         var high = maxInitialFontSize
         var bestSize = low
 
-        // Check if the smallest possible font size already overflows. If so, use it.
         if (isOverflowing(low)) {
             return@remember low
         }
@@ -163,9 +166,9 @@ private fun rememberFitTextSize(
         while (low <= high) {
             val mid = (low + high) / 2
             if (isOverflowing(mid)) {
-                high = mid - 0.1f // Font is too big, search in the lower half
+                high = mid - 0.1f
             } else {
-                bestSize = mid   // Font fits, it's a candidate. Try for a bigger size.
+                bestSize = mid
                 low = mid + 0.1f
             }
         }

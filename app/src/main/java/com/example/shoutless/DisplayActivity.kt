@@ -105,11 +105,81 @@ class DisplayActivity : ComponentActivity() {
 }
 
 @Composable
+private fun rememberFitTextSize(
+    text: String,
+    textStyle: TextStyle,
+    minFontSize: Float = 10f,
+    maxInitialFontSize: Float, // Max starting point for the search
+    maxWidth: Float,
+    maxHeight: Float
+): Float {
+    val textMeasurer = rememberTextMeasurer()
+
+    // Remember the result, keyed by all inputs that affect the calculation
+    return remember(text, textStyle, minFontSize, maxInitialFontSize, maxWidth, maxHeight) {
+        if (text.isBlank()) {
+            return@remember maxInitialFontSize
+        }
+
+        // --- THE CORRECTED LOGIC IS HERE ---
+        // We define a local function for clarity and to allow for simple 'return' statements.
+        // This is the cleanest way to avoid lambda return ambiguity.
+        fun isOverflowing(fontSize: Float): Boolean {
+            val style = textStyle.copy(fontSize = fontSize.sp)
+
+            // First, check if any single word is wider than the container.
+            val anyWordIsTooWide = text.split(Regex("\\s+")).any { word ->
+                if (word.isEmpty()) false
+                else textMeasurer.measure(text = word, style = style).size.width > maxWidth
+            }
+
+            if (anyWordIsTooWide) {
+                return true // A word is too long, so the font size is invalid.
+            }
+
+            // If words fit, check the whole block.
+            val layoutResult = textMeasurer.measure(
+                text = text,
+                style = style,
+                constraints = Constraints(maxWidth = maxWidth.toInt(), maxHeight = maxHeight.toInt())
+            )
+
+            // Return the final overflow status
+            return layoutResult.hasVisualOverflow || layoutResult.size.height > maxHeight
+        }
+        // --- END OF CORRECTED LOGIC ---
+
+
+        // Binary search for the optimal font size (This part remains the same)
+        var low = minFontSize
+        var high = maxInitialFontSize
+        var bestSize = low
+
+        // Check if the smallest possible font size already overflows. If so, use it.
+        if (isOverflowing(low)) {
+            return@remember low
+        }
+
+        while (low <= high) {
+            val mid = (low + high) / 2
+            if (isOverflowing(mid)) {
+                high = mid - 0.1f // Font is too big, search in the lower half
+            } else {
+                bestSize = mid   // Font fits, it's a candidate. Try for a bigger size.
+                low = mid + 0.1f
+            }
+        }
+        bestSize
+    }
+}
+
+
+@Composable
 fun DisplayScreen(
     text: String,
     mode: String,
     defaultFontSize: Int,
-    maxFontSize: Int,
+    maxFontSize: Int, // This is the user-defined max from settings for Lowkey mode
     onDoubleTap: () -> Unit,
     onTripleTap: () -> Unit
 ) {
@@ -120,12 +190,6 @@ fun DisplayScreen(
 
     val screenWidthPx = with(density) { (configuration.screenWidthDp.dp - (padding * 2)).toPx() }
     val screenHeightPx = with(density) { (configuration.screenHeightDp.dp - (padding * 2)).toPx() }
-
-    // Attempt to fix scaling/line-break issues in Landscape orientation
-    val screenWidthDp = configuration.screenWidthDp.dp - (padding * 2)
-
-    val textMeasurer = rememberTextMeasurer()
-    val fontFamilyResolver = LocalFontFamilyResolver.current
 
     val textStyle = LocalTextStyle.current.copy(
         textAlign = TextAlign.Center,
@@ -141,56 +205,41 @@ fun DisplayScreen(
         lineBreak = LineBreak.Simple,
         hyphens = Hyphens.None
     )
-    
-    // SUGGESTION: Consider abstracting the font size calculation logic into a separate,
-    // testable function. This would improve readability and maintainability.
-    val maxFitFontSize = remember(text, screenWidthPx, screenHeightPx) {
-        if (text.isBlank()) {
-            maxFontSize.sp
-        } else {
-            var size = with(density) { screenHeightPx.toSp() }
-            while (size.value > 1f) {
-                val style = textStyle.copy(fontSize = size)
-                if (!isTextOverflowing(text, style, screenWidthPx, screenHeightPx, textMeasurer, fontFamilyResolver)) {
-                    break
-                }
-                size = (size.value * 0.95f).sp
-            }
-            size
-        }
-    }
 
-    // SUGGESTION: Similar to the max font size, this could be moved to a separate function.
-    val initialFontSize = remember(text, screenWidthPx, screenHeightPx, mode, defaultFontSize) {
-        if (text.isBlank()) {
-            30.sp
-        } else if (mode == "Blast") {
-            maxFitFontSize
+    // 1. Calculate the ABSOLUTE maximum font size that can fit the screen.
+    val maxFitFontSizeValue = rememberFitTextSize(
+        text = text,
+        textStyle = textStyle,
+        maxInitialFontSize = 300f,
+        maxWidth = screenWidthPx,
+        maxHeight = screenHeightPx
+    )
+
+    // 2. Determine the initial font size based on the mode.
+    val initialFontSizeValue = remember(mode, text, maxFitFontSizeValue, defaultFontSize, maxFontSize) {
+        if (mode == "Blast") {
+            maxFitFontSizeValue
         } else { // Lowkey mode
-            var size = defaultFontSize.sp
-            while (size.value > 1f) {
-                val style = textStyle.copy(fontSize = size)
-                if (!isTextOverflowing(text, style, screenWidthPx, screenHeightPx, textMeasurer, fontFamilyResolver)) {
-                    break
-                }
-                size = (size.value * 0.95f).sp
-            }
-            size
+            val userLimitedMax = min(maxFitFontSizeValue, maxFontSize.toFloat())
+            defaultFontSize.toFloat().coerceAtMost(userLimitedMax)
         }
     }
 
-    var dynamicFontSize by remember { mutableStateOf(initialFontSize) }
+    var dynamicFontSize by remember { mutableStateOf(initialFontSizeValue.sp) }
 
-    LaunchedEffect(initialFontSize) {
-        dynamicFontSize = initialFontSize
+    LaunchedEffect(initialFontSizeValue) {
+        dynamicFontSize = initialFontSizeValue.sp
     }
+
+    // 3. Determine the zoom gesture's ceiling by respecting BOTH the screen limit AND the user setting.
+    val maxAllowedZoomSize = min(maxFitFontSizeValue, maxFontSize.toFloat())
 
     val gestureModifier = if (mode == "Lowkey") {
         Modifier.pointerInput(Unit) {
             detectTransformGestures { _, _, zoom, _ ->
                 val newSizeValue = dynamicFontSize.value * zoom
-                val maxAllowedSize = maxFitFontSize.value
-                dynamicFontSize = newSizeValue.coerceIn(10f, maxAllowedSize).sp
+                // Use the new, correctly calculated ceiling for the zoom.
+                dynamicFontSize = newSizeValue.coerceIn(10f, maxAllowedZoomSize).sp
             }
         }
     } else {
@@ -200,10 +249,7 @@ fun DisplayScreen(
     val scope = rememberCoroutineScope()
     var tapCount by remember { mutableStateOf(0) }
     var tapJob: Job? by remember { mutableStateOf(null) }
-    
-    // SUGGESTION: The triple-tap gesture to navigate to ClapbackActivity could be
-    // made more discoverable to the user, perhaps with a subtle visual cue or
-    // a mention in a "first launch" overlay.
+
     Scaffold {
         Box(
             modifier = Modifier
@@ -233,43 +279,8 @@ fun DisplayScreen(
             Text(
                 text = text,
                 color = MaterialTheme.colorScheme.onBackground,
-                // Apply the scaling fix
-                modifier = Modifier.width(screenWidthDp),
                 style = textStyle.copy(fontSize = dynamicFontSize)
             )
         }
     }
-}
-
-// SUGGESTION: This function is doing a lot of heavy lifting. It could be
-// further optimized, for example, by using a binary search approach to find
-// the optimal font size, which would be more efficient than the current
-// iterative approach.
-fun isTextOverflowing(
-    text: String,
-    style: TextStyle,
-    maxWidth: Float,
-    maxHeight: Float,
-    textMeasurer: androidx.compose.ui.text.TextMeasurer,
-    fontFamilyResolver: FontFamily.Resolver
-): Boolean {
-    // First, check if any single word is wider than the container.
-    // If it is, the font is too large, because that word would have to break.
-    text.split(Regex("\\s+")).forEach { word ->
-        if (word.isNotEmpty()) {
-            val wordLayout = textMeasurer.measure(text = word, style = style)
-            if (wordLayout.size.width > maxWidth) {
-                return true // This font size is too big, a word will inevitably break.
-            }
-        }
-    }
-
-    // If all individual words fit, now check if the whole text block fits.
-    val layoutResult = textMeasurer.measure(
-        text = text,
-        style = style,
-        constraints = Constraints(maxWidth = maxWidth.toInt(), maxHeight = maxHeight.toInt()),
-        fontFamilyResolver = fontFamilyResolver
-    )
-    return layoutResult.hasVisualOverflow || layoutResult.size.height > maxHeight
 }

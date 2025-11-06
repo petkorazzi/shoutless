@@ -12,6 +12,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -134,50 +135,32 @@ private fun rememberFitTextSize(
         if (text.isBlank()) {
             return@remember maxInitialFontSize
         }
-
-        // We need to check every word, so split the text once.
         val words = text.split(Regex("\\s+"))
-
         fun isOverflowing(fontSize: Float): Boolean {
             val style = textStyle.copy(fontSize = fontSize.sp)
-
-            // CONDITION 1: Check for Word Integrity.
-            // Does the single widest word fit horizontally?
-            // We measure each word with softWrap = false to get its true, unbroken width.
             for (word in words) {
                 val wordWidth = textMeasurer.measure(
                     text = word,
                     style = style,
-                    softWrap = false // This is the key!
+                    softWrap = false
                 ).size.width
-
                 if (wordWidth > maxWidth) {
-                    return true // This font size is too big, a word won't fit.
+                    return true
                 }
             }
-
-            // CONDITION 2: Check for Block Integrity.
-            // If all words fit, does the whole wrapped text block fit vertically?
             val layoutResult = textMeasurer.measure(
                 text = text,
                 style = style,
-                constraints = Constraints(maxWidth = maxWidth.toInt()) // Measure with an unconstrained height first
+                constraints = Constraints(maxWidth = maxWidth.toInt())
             )
-
-            // Instead of relying on hasVisualOverflow, we do a direct, explicit comparison.
-            // This is far more reliable and removes ambiguity.
             return layoutResult.size.height > maxHeight
         }
-
-        // Binary search remains the same, but now uses our robust check.
         var low = minFontSize
         var high = maxInitialFontSize
         var bestSize = low
-
         if (isOverflowing(low)) {
             return@remember low
         }
-
         while (low <= high) {
             val mid = (low + high) / 2
             if (isOverflowing(mid)) {
@@ -197,7 +180,7 @@ fun DisplayScreen(
     text: String,
     mode: String,
     defaultFontSize: Int,
-    maxFontSize: Int, // This is the user-defined max from settings for Lowkey mode
+    maxFontSize: Int,
     onDoubleTap: () -> Unit,
     onTripleTap: () -> Unit,
     onHomeClick: () -> Unit,
@@ -205,11 +188,7 @@ fun DisplayScreen(
 ) {
     HideSystemBars()
     val configuration = LocalConfiguration.current
-    val density = LocalDensity.current
     val padding = 16.dp
-
-    val screenWidthPx = with(density) { (configuration.screenWidthDp.dp - (padding * 2)).toPx() }
-    val screenHeightPx = with(density) { (configuration.screenHeightDp.dp - (padding * 2)).toPx() }
 
     val textStyle = LocalTextStyle.current.copy(
         textAlign = TextAlign.Center,
@@ -226,55 +205,15 @@ fun DisplayScreen(
         hyphens = Hyphens.None
     )
 
-    // 1. Calculate the ABSOLUTE maximum font size that can fit the screen.
-    val maxFitFontSizeValue = rememberFitTextSize(
-        text = text,
-        textStyle = textStyle,
-        maxInitialFontSize = 300f,
-        maxWidth = screenWidthPx,
-        maxHeight = screenHeightPx
-    )
-
-    // 2. Determine the initial font size based on the mode.
-    val initialFontSizeValue = remember(mode, text, maxFitFontSizeValue, defaultFontSize, maxFontSize) {
-        if (mode == "Blast") {
-            maxFitFontSizeValue
-        } else { // Lowkey mode
-            val userLimitedMax = min(maxFitFontSizeValue, maxFontSize.toFloat())
-            defaultFontSize.toFloat().coerceAtMost(userLimitedMax)
-        }
-    }
-
-    var dynamicFontSize by remember { mutableStateOf(initialFontSizeValue.sp) }
-
-    LaunchedEffect(initialFontSizeValue) {
-        dynamicFontSize = initialFontSizeValue.sp
-    }
-
-    // 3. Determine the zoom gesture's ceiling by respecting BOTH the screen limit AND the user setting.
-    val maxAllowedZoomSize = min(maxFitFontSizeValue, maxFontSize.toFloat())
-
-    val gestureModifier = if (mode == "Lowkey") {
-        Modifier.pointerInput(Unit) {
-            detectTransformGestures { _, _, zoom, _ ->
-                val newSizeValue = dynamicFontSize.value * zoom
-                // Use the new, correctly calculated ceiling for the zoom.
-                dynamicFontSize = newSizeValue.coerceIn(10f, maxAllowedZoomSize).sp
-            }
-        }
-    } else {
-        Modifier
-    }
-
     val scope = rememberCoroutineScope()
     var tapCount by remember { mutableStateOf(0) }
     var tapJob: Job? by remember { mutableStateOf(null) }
 
-    Scaffold {
-        Box(
+    Scaffold { scaffoldPadding ->
+        BoxWithConstraints(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(it)
+                .padding(scaffoldPadding) // Apply padding from Scaffold
                 .background(MaterialTheme.colorScheme.background)
                 .pointerInput(Unit) {
                     detectTapGestures(
@@ -292,53 +231,93 @@ fun DisplayScreen(
                         }
                     )
                 }
-                .then(gestureModifier)
-                .padding(padding),
+                .padding(padding), // Apply our own content padding
             contentAlignment = Alignment.Center
         ) {
-            Text(
+            // This is the key: we now use the constraints provided by BoxWithConstraints.
+            // These are the REAL available pixels after all paddings are applied.
+            val maxWidthPx = this.constraints.maxWidth.toFloat()
+            val maxHeightPx = this.constraints.maxHeight.toFloat()
+
+            // All the logic that depends on size is now INSIDE the box that knows its own size.
+            val maxFitFontSizeValue = rememberFitTextSize(
                 text = text,
-                color = MaterialTheme.colorScheme.onBackground,
-                style = textStyle.copy(fontSize = dynamicFontSize)
+                textStyle = textStyle,
+                maxInitialFontSize = 300f,
+                maxWidth = maxWidthPx,
+                maxHeight = maxHeightPx
             )
 
-            // --- START: Corrected Icons ---
-            val orientation = configuration.orientation
-            val iconColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.2f)
+            val initialLowkeyFontSize = remember(maxFitFontSizeValue, defaultFontSize, maxFontSize) {
+                val userLimitedMax = min(maxFitFontSizeValue, maxFontSize.toFloat())
+                defaultFontSize.toFloat().coerceAtMost(userLimitedMax)
+            }
 
-            // Determine alignments for BOTH icons based on orientation
-            val (homeIconAlignment, quickPhrasesAlignment) = if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
-                // Landscape: Home -> Top-Left, Quick Phrases -> Bottom-Left
-                Pair(Alignment.TopStart, Alignment.BottomStart)
+            var lowkeyDynamicFontSize by remember { mutableStateOf(initialLowkeyFontSize.sp) }
+
+            LaunchedEffect(initialLowkeyFontSize) {
+                lowkeyDynamicFontSize = initialLowkeyFontSize.sp
+            }
+
+            val finalFontSize = if (mode == "Blast") {
+                maxFitFontSizeValue.sp
             } else {
-                // Portrait: Home -> Bottom-Left, Quick Phrases -> Bottom-Right
-                Pair(Alignment.BottomStart, Alignment.BottomEnd)
+                lowkeyDynamicFontSize
             }
 
-            // Home Icon to return to MainActivity
-            IconButton(
-                onClick = onHomeClick,
-                modifier = Modifier.align(homeIconAlignment)
-            ) {
-                Icon(
-                    imageVector = Icons.Rounded.Home,
-                    contentDescription = "Go Home",
-                    tint = iconColor
-                )
+            val gestureModifier = if (mode == "Lowkey") {
+                Modifier.pointerInput(Unit) {
+                    detectTransformGestures { _, _, zoom, _ ->
+                        val newSizeValue = lowkeyDynamicFontSize.value * zoom
+                        val maxAllowedZoomSize = min(maxFitFontSizeValue, maxFontSize.toFloat())
+                        lowkeyDynamicFontSize = newSizeValue.coerceIn(10f, maxAllowedZoomSize).sp
+                    }
+                }
+            } else {
+                Modifier
             }
 
-            // Quick Phrases Icon to go to ClapbackActivity
-            IconButton(
-                onClick = onQuickPhrasesClick,
-                modifier = Modifier.align(quickPhrasesAlignment)
+            // The Text and Icons are now placed inside a separate Box that has the gesture modifier
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .then(gestureModifier),
+                contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.quick_phrases_24px),
-                    contentDescription = "Quick Phrases",
-                    tint = iconColor
+                Text(
+                    text = text,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    style = textStyle.copy(fontSize = finalFontSize)
                 )
+
+                val orientation = configuration.orientation
+                val iconColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.2f)
+                val (homeIconAlignment, quickPhrasesAlignment) = if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                    Pair(Alignment.TopStart, Alignment.BottomStart)
+                } else {
+                    Pair(Alignment.BottomStart, Alignment.BottomEnd)
+                }
+                IconButton(
+                    onClick = onHomeClick,
+                    modifier = Modifier.align(homeIconAlignment)
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Home,
+                        contentDescription = "Go Home",
+                        tint = iconColor
+                    )
+                }
+                IconButton(
+                    onClick = onQuickPhrasesClick,
+                    modifier = Modifier.align(quickPhrasesAlignment)
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.quick_phrases_24px),
+                        contentDescription = "Quick Phrases",
+                        tint = iconColor
+                    )
+                }
             }
-            // --- END: Corrected Icons ---
         }
     }
 }

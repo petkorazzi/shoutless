@@ -3,6 +3,7 @@ package com.example.shoutless
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
+import android.content.res.Configuration
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
@@ -13,6 +14,10 @@ import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Home
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -29,6 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.rememberTextMeasurer
@@ -80,6 +86,17 @@ class DisplayActivity : ComponentActivity() {
                     maxFontSize = maxFontSize,
                     onDoubleTap = { finish() },
                     onTripleTap = {
+                        val intent = Intent(this, ClapbackActivity::class.java)
+                        startActivity(intent)
+                        finish()
+                    },
+                    onHomeClick = {
+                        val intent = Intent(this, MainActivity::class.java)
+                        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                        startActivity(intent)
+                        finish()
+                    },
+                    onQuickPhrasesClick = {
                         val intent = Intent(this, ClapbackActivity::class.java)
                         startActivity(intent)
                         finish()
@@ -182,7 +199,9 @@ fun DisplayScreen(
     defaultFontSize: Int,
     maxFontSize: Int, // This is the user-defined max from settings for Lowkey mode
     onDoubleTap: () -> Unit,
-    onTripleTap: () -> Unit
+    onTripleTap: () -> Unit,
+    onHomeClick: () -> Unit,
+    onQuickPhrasesClick: () -> Unit,
 ) {
     HideSystemBars()
     val configuration = LocalConfiguration.current
@@ -282,6 +301,44 @@ fun DisplayScreen(
                 color = MaterialTheme.colorScheme.onBackground,
                 style = textStyle.copy(fontSize = dynamicFontSize)
             )
+
+            // --- START: Corrected Icons ---
+            val orientation = configuration.orientation
+            val iconColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.2f)
+
+            // Determine alignments for BOTH icons based on orientation
+            val (homeIconAlignment, quickPhrasesAlignment) = if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                // Landscape: Home -> Top-Left, Quick Phrases -> Bottom-Left
+                Pair(Alignment.TopStart, Alignment.BottomStart)
+            } else {
+                // Portrait: Home -> Bottom-Left, Quick Phrases -> Bottom-Right
+                Pair(Alignment.BottomStart, Alignment.BottomEnd)
+            }
+
+            // Home Icon to return to MainActivity
+            IconButton(
+                onClick = onHomeClick,
+                modifier = Modifier.align(homeIconAlignment)
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.Home,
+                    contentDescription = "Go Home",
+                    tint = iconColor
+                )
+            }
+
+            // Quick Phrases Icon to go to ClapbackActivity
+            IconButton(
+                onClick = onQuickPhrasesClick,
+                modifier = Modifier.align(quickPhrasesAlignment)
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.quick_phrases_24px),
+                    contentDescription = "Quick Phrases",
+                    tint = iconColor
+                )
+            }
+            // --- END: Corrected Icons ---
         }
     }
 }

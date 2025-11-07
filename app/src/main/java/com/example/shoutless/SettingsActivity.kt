@@ -2,6 +2,7 @@ package com.example.shoutless
 
 import android.app.Application
 import android.content.Context
+import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -18,9 +19,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -31,13 +36,17 @@ import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
@@ -94,6 +103,7 @@ fun SettingsRoute(
 ) {
     val uiState by settingsViewModel.uiState.collectAsState()
     val tagline by settingsViewModel.randomTagline.collectAsState()
+    val context = LocalContext.current
 
     HideSystemBars()
 
@@ -112,6 +122,14 @@ fun SettingsRoute(
         onClapback3HiddenChange = settingsViewModel::updateClapback3Hidden,
         onClapback4LabelChange = settingsViewModel::updateClapback4Label,
         onClapback4HiddenChange = settingsViewModel::updateClapback4Hidden,
+        onNavigateToHome = {
+            val intent = Intent(context, MainActivity::class.java)
+            context.startActivity(intent)
+        },
+        onNavigateToClapback = {
+            val intent = Intent(context, ClapbackActivity::class.java)
+            context.startActivity(intent)
+        }
     )
 }
 
@@ -148,6 +166,8 @@ fun SettingsScreen(
     onClapback3HiddenChange: (String) -> Unit,
     onClapback4LabelChange: (String) -> Unit,
     onClapback4HiddenChange: (String) -> Unit,
+    onNavigateToHome: () -> Unit,
+    onNavigateToClapback: () -> Unit
 ) {
     val tertiaryColor = MaterialTheme.colorScheme.tertiary
     val clapbackTextFieldColors = TextFieldDefaults.colors(
@@ -160,7 +180,34 @@ fun SettingsScreen(
         unfocusedContainerColor = MaterialTheme.colorScheme.surface
     )
 
-    Scaffold { paddingValues ->
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { },
+                navigationIcon = {
+                    IconButton(onClick = onNavigateToHome) {
+                        Icon(
+                            imageVector = Icons.Rounded.Home,
+                            contentDescription = "Home",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(onClick = onNavigateToClapback) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.quick_phrases_24px),
+                            contentDescription = "Clapback",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color.Transparent
+                )
+            )
+        }
+    ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -171,7 +218,7 @@ fun SettingsScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Column(
-                modifier = Modifier.padding(top = 60.dp),
+                modifier = Modifier,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
@@ -359,7 +406,9 @@ fun SettingsScreenPreview() {
             onClapback3LabelChange = {},
             onClapback3HiddenChange = {},
             onClapback4LabelChange = {},
-            onClapback4HiddenChange = {}
+            onClapback4HiddenChange = {},
+            onNavigateToHome = {},
+            onNavigateToClapback = {}
         )
     }
 }

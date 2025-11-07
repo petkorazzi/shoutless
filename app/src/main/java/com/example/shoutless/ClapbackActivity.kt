@@ -35,6 +35,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Edit
+import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -126,6 +127,18 @@ fun ClapbackScreen(modifier: Modifier = Modifier, onFinishActivity: () -> Unit) 
         topBar = {
             TopAppBar(
                 title = { },
+                navigationIcon = {
+                    IconButton(onClick = {
+                        val intent = Intent(context, MainActivity::class.java)
+                        context.startActivity(intent)
+                    }) {
+                        Icon(
+                            imageVector = Icons.Rounded.Home,
+                            contentDescription = "Home",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                },
                 actions = {
                     IconButton(onClick = {
                         val intent = Intent(context, SettingsActivity::class.java)

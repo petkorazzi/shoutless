@@ -4,16 +4,18 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.google.gms.google.services)
+    alias(libs.plugins.google.firebase.crashlytics)
 }
 
 android {
-    namespace = "com.example.shoutless"
+    namespace = "io.petkorazzi.shoutless"
     compileSdk {
         version = release(36)
     }
 
     defaultConfig {
-        applicationId = "com.example.shoutless"
+        applicationId = "io.petkorazzi.shoutless"
         minSdk = 29
         targetSdk = 36
         versionCode = 1
@@ -60,6 +62,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.text.google.fonts)
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.firebase.crashlytics)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

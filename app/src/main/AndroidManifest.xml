@@ -13,7 +13,7 @@
         android:theme="@style/Theme.Shoutless">
 
         <activity
-            android:name=".MainActivity"
+            android:name="io.petkorazzi.shoutless.MainActivity"
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.App.Starting">
@@ -25,11 +25,11 @@
         </activity>
 
         <activity
-            android:name=".DisplayActivity" />
+            android:name="io.petkorazzi.shoutless.DisplayActivity" />
         <activity
-            android:name=".SettingsActivity" />
+            android:name="io.petkorazzi.shoutless.SettingsActivity" />
         <activity
-            android:name=".ClapbackActivity" />
+            android:name="io.petkorazzi.shoutless.ClapbackActivity" />
     </application>
 
 </manifest>

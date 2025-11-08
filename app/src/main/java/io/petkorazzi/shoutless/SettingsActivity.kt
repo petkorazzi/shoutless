@@ -1,4 +1,4 @@
-package com.example.shoutless
+package io.petkorazzi.shoutless
 
 import android.app.Application
 import android.content.Context
@@ -55,8 +55,9 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.shoutless.ui.theme.ShoutlessTheme
-import com.example.shoutless.util.HideSystemBars
+import io.petkorazzi.shoutless.R
+import io.petkorazzi.shoutless.ui.theme.ShoutlessTheme
+import io.petkorazzi.shoutless.util.HideSystemBars
 import kotlin.math.roundToInt
 
 class SettingsActivity : ComponentActivity() {

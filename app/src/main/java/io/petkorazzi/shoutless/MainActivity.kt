@@ -1,4 +1,4 @@
-package com.example.shoutless
+package io.petkorazzi.shoutless
 
 import android.content.Intent
 import android.content.pm.ActivityInfo
@@ -61,17 +61,19 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.shoutless.ui.theme.ShoutlessTheme
-import com.example.shoutless.util.HideSystemBars
-import com.example.shoutless.util.glow
+import io.petkorazzi.shoutless.ui.theme.ShoutlessTheme
+import io.petkorazzi.shoutless.util.HideSystemBars
+import io.petkorazzi.shoutless.util.glow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.ui.text.font.FontStyle
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import io.petkorazzi.shoutless.R
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -206,7 +208,7 @@ fun HomeScreen(modifier: Modifier = Modifier, mainViewModel: MainViewModel) {
                         text = tagline,
                         modifier = Modifier.offset(y = (-8).dp),
                         style = MaterialTheme.typography.bodyLarge.copy(
-                            fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
+                            fontStyle = FontStyle.Italic,
                             shadow = Shadow(color = MaterialTheme.colorScheme.onBackground, blurRadius = 10f)
                         )
                     )
@@ -230,6 +232,7 @@ fun HomeScreen(modifier: Modifier = Modifier, mainViewModel: MainViewModel) {
                         onClick = {
                             if (text.isBlank()) {
                                 val messages = context.resources.getStringArray(R.array.toast_messages)
+
                                 scope.launch {
                                     withTimeoutOrNull(2000) {
                                         snackbarHostState.showSnackbar(messages.random())

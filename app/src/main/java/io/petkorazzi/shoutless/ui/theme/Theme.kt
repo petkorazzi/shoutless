@@ -1,4 +1,4 @@
-package com.example.shoutless.ui.theme
+package io.petkorazzi.shoutless.ui.theme
 
 import android.app.Activity
 import androidx.compose.material3.MaterialTheme

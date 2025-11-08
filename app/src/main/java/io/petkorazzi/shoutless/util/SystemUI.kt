@@ -1,4 +1,4 @@
-package com.example.shoutless.util
+package io.petkorazzi.shoutless.util
 
 import android.app.Activity
 import androidx.compose.runtime.Composable

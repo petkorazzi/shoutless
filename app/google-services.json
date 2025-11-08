@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "535893752176",
+    "project_id": "shoutless-65997",
+    "storage_bucket": "shoutless-65997.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:535893752176:android:113b738a9ab01b68c9f7b5",
+        "android_client_info": {
+          "package_name": "io.petkorazzi.shoutless"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCR_MCN28Y8MLPLwKhGaEs3KF6B_NhQVvA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

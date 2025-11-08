@@ -1,4 +1,4 @@
-package com.example.shoutless.util
+package io.petkorazzi.shoutless.util
 
 import android.graphics.BlurMaskFilter
 import androidx.compose.ui.Modifier

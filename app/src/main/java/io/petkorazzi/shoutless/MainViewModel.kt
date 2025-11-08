@@ -1,4 +1,4 @@
-package com.example.shoutless
+package io.petkorazzi.shoutless
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel

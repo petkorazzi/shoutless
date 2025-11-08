@@ -1,4 +1,4 @@
-package com.example.shoutless
+package io.petkorazzi.shoutless
 
 import android.content.Context
 import android.content.Intent
@@ -65,14 +65,16 @@ import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.shoutless.ui.theme.ShoutlessTheme
-import com.example.shoutless.util.HideSystemBars
-import com.example.shoutless.util.glow
+import io.petkorazzi.shoutless.R
+import io.petkorazzi.shoutless.ui.theme.ShoutlessTheme
+import io.petkorazzi.shoutless.util.HideSystemBars
+import io.petkorazzi.shoutless.util.glow
 
 class ClapbackActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -200,7 +202,7 @@ fun ClapbackScreen(modifier: Modifier = Modifier, onFinishActivity: () -> Unit) 
                         text = tagline,
                         modifier = Modifier.offset(y = (-8).dp),
                         style = MaterialTheme.typography.bodyLarge.copy(
-                            fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
+                            fontStyle = FontStyle.Italic,
                             shadow = Shadow(color = MaterialTheme.colorScheme.onBackground, blurRadius = 10f)
                         )
                     )

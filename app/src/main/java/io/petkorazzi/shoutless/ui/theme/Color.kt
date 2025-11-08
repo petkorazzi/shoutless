@@ -1,4 +1,4 @@
-package com.example.shoutless.ui.theme
+package io.petkorazzi.shoutless.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

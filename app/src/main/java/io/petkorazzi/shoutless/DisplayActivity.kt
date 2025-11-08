@@ -1,4 +1,4 @@
-package com.example.shoutless
+package io.petkorazzi.shoutless
 
 import android.content.Context
 import android.content.Intent
@@ -34,8 +34,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.rememberTextMeasurer
@@ -47,8 +47,9 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
-import com.example.shoutless.ui.theme.ShoutlessDisplayTheme
-import com.example.shoutless.util.HideSystemBars
+import io.petkorazzi.shoutless.R
+import io.petkorazzi.shoutless.ui.theme.ShoutlessDisplayTheme
+import io.petkorazzi.shoutless.util.HideSystemBars
 import kotlin.math.min
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -194,7 +195,7 @@ fun DisplayScreen(
         textAlign = TextAlign.Center,
         fontFamily = FontFamily.Default,
         lineHeight = 1.15.em,
-        platformStyle = androidx.compose.ui.text.PlatformTextStyle(
+        platformStyle = PlatformTextStyle(
             includeFontPadding = false
         ),
         lineHeightStyle = LineHeightStyle(

@@ -51,15 +51,14 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.petkorazzi.shoutless.ui.theme.ShoutlessTheme
 import io.petkorazzi.shoutless.util.HideSystemBars
@@ -73,7 +72,6 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
-import io.petkorazzi.shoutless.R
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -103,8 +101,8 @@ fun HomeScreen(modifier: Modifier = Modifier, mainViewModel: MainViewModel) {
     val scope = rememberCoroutineScope()
 
     // START: Refreshable Tagline Logic
-    val taglines = remember { context.resources.getStringArray(R.array.taglines) }
-    var tagline by remember { mutableStateOf(taglines.random()) }
+    val taglines: Array<String> = stringArrayResource(id = R.array.taglines)
+    var tagline by remember(taglines) { mutableStateOf(taglines.random()) }
     val lifecycleOwner = LocalLifecycleOwner.current
 
     DisposableEffect(lifecycleOwner) {
@@ -119,6 +117,7 @@ fun HomeScreen(modifier: Modifier = Modifier, mainViewModel: MainViewModel) {
         }
     }
     // END: Refreshable Tagline Logic
+    val toastMessages: Array<String> = stringArrayResource(id = R.array.toast_messages)
 
     HideSystemBars()
 
@@ -231,11 +230,9 @@ fun HomeScreen(modifier: Modifier = Modifier, mainViewModel: MainViewModel) {
                         textBlurRadius = 25f,
                         onClick = {
                             if (text.isBlank()) {
-                                val messages = context.resources.getStringArray(R.array.toast_messages)
-
                                 scope.launch {
                                     withTimeoutOrNull(2000) {
-                                        snackbarHostState.showSnackbar(messages.random())
+                                        snackbarHostState.showSnackbar(toastMessages.random())
                                     }
                                 }
                             } else {
@@ -253,10 +250,9 @@ fun HomeScreen(modifier: Modifier = Modifier, mainViewModel: MainViewModel) {
                         textBlurRadius = 10f,
                         onClick = {
                             if (text.isBlank()) {
-                                val messages = context.resources.getStringArray(R.array.toast_messages)
                                 scope.launch {
                                     withTimeoutOrNull(2000) {
-                                        snackbarHostState.showSnackbar(messages.random())
+                                        snackbarHostState.showSnackbar(toastMessages.random())
                                     }
                                 }
                             } else {
@@ -294,7 +290,7 @@ fun HomeScreen(modifier: Modifier = Modifier, mainViewModel: MainViewModel) {
                             color = MaterialTheme.colorScheme.tertiary,
                             shape = RoundedCornerShape(24.dp)
                         )
-                        .clickable { 
+                        .clickable {
                             val intent = Intent(context, ClapbackActivity::class.java)
                             context.startActivity(intent)
                         },
@@ -411,13 +407,5 @@ fun ModeButton(
                 modifier = Modifier.offset(y = (-12).dp)
             )
         }
-    }
-}
-
-@Preview(showBackground = true, backgroundColor = 0xFF000000)
-@Composable
-fun HomeScreenPreview() {
-    ShoutlessTheme {
-        HomeScreen(mainViewModel = MainViewModel(SavedStateHandle()))
     }
 }

@@ -55,7 +55,6 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import io.petkorazzi.shoutless.R
 import io.petkorazzi.shoutless.ui.theme.ShoutlessTheme
 import io.petkorazzi.shoutless.util.HideSystemBars
 import kotlin.math.roundToInt

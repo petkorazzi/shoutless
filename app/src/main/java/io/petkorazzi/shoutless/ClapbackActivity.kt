@@ -66,15 +66,17 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import io.petkorazzi.shoutless.R
 import io.petkorazzi.shoutless.ui.theme.ShoutlessTheme
 import io.petkorazzi.shoutless.util.HideSystemBars
 import io.petkorazzi.shoutless.util.glow
+import androidx.core.content.edit
+import androidx.compose.runtime.mutableIntStateOf
 
 class ClapbackActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -113,8 +115,9 @@ fun ClapbackScreen(modifier: Modifier = Modifier, onFinishActivity: () -> Unit) 
     var customText1 by remember { mutableStateOf(sharedPreferences.getString("custom_text_1", "On my way!") ?: "On my way!") }
     var customText2 by remember { mutableStateOf(sharedPreferences.getString("custom_text_2", "Sounds good!") ?: "Sounds good!") }
     var showEditDialog by remember { mutableStateOf(false) }
-    var textToEditId by remember { mutableStateOf(0) }
-    var number by remember { mutableStateOf(1) }
+    var textToEditId by remember { mutableIntStateOf(0) } // Changed to mutableIntStateOf
+    var number by remember { mutableIntStateOf(1) } // Changed to mutableIntStateOf
+
 
     fun launchDisplay(text: String) {
         val intent = DisplayActivity.newIntent(context, text, selectedMode)
@@ -195,8 +198,8 @@ fun ClapbackScreen(modifier: Modifier = Modifier, onFinishActivity: () -> Unit) 
                     )
 
                     // Tagline
-                    val taglines = context.resources.getStringArray(R.array.clapback_taglines)
-                    val tagline = remember { taglines.random() }
+                    val taglines: Array<String> = stringArrayResource(id = R.array.clapback_taglines)
+                    val tagline = remember(taglines) { taglines.random() }
 
                     Text(
                         text = tagline,
@@ -220,7 +223,10 @@ fun ClapbackScreen(modifier: Modifier = Modifier, onFinishActivity: () -> Unit) 
                             alpha = 0.5f
                         ) else Modifier,
                         selected = selectedMode == "Lowkey",
-                        onClick = { selectedMode = "Lowkey" },
+                        onClick = {
+                            selectedMode = "Lowkey"
+                            sharedPreferences.edit { putString("last_display_mode", "Lowkey") }
+                        },
                         shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2),
                         colors = SegmentedButtonDefaults.colors(
                             activeContainerColor = MaterialTheme.colorScheme.primary,
@@ -241,7 +247,10 @@ fun ClapbackScreen(modifier: Modifier = Modifier, onFinishActivity: () -> Unit) 
                             alpha = 0.5f
                         ) else Modifier,
                         selected = selectedMode == "Blast",
-                        onClick = { selectedMode = "Blast" },
+                        onClick = {
+                            selectedMode = "Blast"
+                            sharedPreferences.edit { putString("last_display_mode", "Blast") }
+                        },
                         shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2),
                         colors = SegmentedButtonDefaults.colors(
                             activeContainerColor = MaterialTheme.colorScheme.secondary,
@@ -323,10 +332,10 @@ fun ClapbackScreen(modifier: Modifier = Modifier, onFinishActivity: () -> Unit) 
                 onConfirm = {
                     if (textToEditId == 1) {
                         customText1 = it
-                        sharedPreferences.edit().putString("custom_text_1", it).apply()
+                        sharedPreferences.edit { putString("custom_text_1", it) }
                     } else {
                         customText2 = it
-                        sharedPreferences.edit().putString("custom_text_2", it).apply()
+                        sharedPreferences.edit { putString("custom_text_2", it) }
                     }
                     showEditDialog = false
                 }

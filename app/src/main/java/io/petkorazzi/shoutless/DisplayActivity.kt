@@ -47,7 +47,6 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
-import io.petkorazzi.shoutless.R
 import io.petkorazzi.shoutless.ui.theme.ShoutlessDisplayTheme
 import io.petkorazzi.shoutless.util.HideSystemBars
 import kotlin.math.min

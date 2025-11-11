@@ -1,7 +1,9 @@
 # Privacy Policy for shoutless
 
-**Developer:** Voidcat 
+**Developer:** Voidcat
+
 **App Name:** shoutless
+
 **Effective Date:** 11/10/2025
 
 Voidcat ("us", "we", or "our") operates the shoutless mobile application (the "Service").

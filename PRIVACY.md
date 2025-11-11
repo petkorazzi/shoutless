@@ -64,4 +64,4 @@ You are advised to review this Privacy Policy periodically for any changes. Chan
 
 If you have any questions about this Privacy Policy, please contact us:
 
-    **By email:** shoutless@gmail.com
+    By email: shoutless@gmail.com

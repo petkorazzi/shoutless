@@ -1,14 +1,14 @@
 ---
-name: Issue Report
-about: Report an issue you had with shoutless!
-title: "[ISSUE]"
-labels: ''
+name: Bug Report
+about: Report a bug you encountered in shoutless!
+title: "[BUG]"
+labels: bug
 assignees: petkorazzi
 
 ---
 
-**Describe the issue**
-A clear and concise description of what the issue is.
+**Describe the bug**
+A clear and concise description of what happened.
 
 **To Reproduce**
 Steps to reproduce the behavior:
